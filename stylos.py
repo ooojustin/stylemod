@@ -3,14 +3,38 @@ from torch.optim.adam import Adam
 from PIL import Image
 import click
 from torchvision import transforms, models
+from torchvision.models import VGG19_Weights
+
+
+def list_available_gpus():
+    num_gpus = torch.cuda.device_count()
+    if num_gpus > 0:
+        print(f"{num_gpus} GPU(s) available:")
+        for i in range(num_gpus):
+            print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+
+
+def get_device(gpu_index=None):
+    if torch.cuda.is_available():
+        if gpu_index is not None and torch.cuda.device_count() > gpu_index:
+            print(
+                f"Using GPU {gpu_index}: {torch.cuda.get_device_name(gpu_index)}")
+            return torch.device(f"cuda:{gpu_index}")
+        else:
+            print(f"Using GPU 0: {torch.cuda.get_device_name(0)}")
+            return torch.device("cuda")
+    else:
+        print("Using CPU")
+        return torch.device("cpu")
+
 
 # load the pre-trained vgg19 model
-vgg = models.vgg19(pretrained=True).features
+vgg = models.vgg19(weights=VGG19_Weights.IMAGENET1K_V1).features
 for param in vgg.parameters():
     param.requires_grad_(False)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-vgg.to(device)
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# vgg.to(device)
 
 
 def load_image(img_path, max_size=400, shape=None):
@@ -62,7 +86,11 @@ def gram_matrix(tensor):
 @click.option("--output-image", default="output_image.png", help="filename for the output image.")
 @click.option("--steps", default=2000, help="Number of optimization steps (default: 2000).")
 @click.option("--max-size", default=400, help="Maximum size of input images (default: 400).")
-def style_transfer(content_image, style_image, output_image, steps, max_size):
+@click.option("--gpu-index", default=None, type=int, help="GPU index to use (default: 0 if available).")
+def style_transfer(content_image, style_image, output_image, steps, max_size, gpu_index):
+    list_available_gpus()
+    device = get_device(gpu_index)
+
     content = load_image(content_image, max_size=max_size).to(device)
     style = load_image(
         style_image, shape=content.shape[-2:], max_size=max_size).to(device)
