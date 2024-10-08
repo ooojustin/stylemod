@@ -161,3 +161,6 @@ cython_debug/
 
 # Directory to store images for easy access via CLI during development process
 img/
+
+# Default output image path
+output_image.png

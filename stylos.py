@@ -4,6 +4,7 @@ from PIL import Image
 import click
 from torchvision import transforms, models
 
+# load the pre-trained vgg19 model
 vgg = models.vgg19(pretrained=True).features
 for param in vgg.parameters():
     param.requires_grad_(False)
@@ -27,6 +28,7 @@ def load_image(img_path, max_size=400, shape=None):
     return image
 
 
+# extract features from vgg19
 def get_features(image, model, layers=None):
     if layers is None:
         layers = {
@@ -46,6 +48,7 @@ def get_features(image, model, layers=None):
     return features
 
 
+# calculate the gram matrix for style loss
 def gram_matrix(tensor):
     _, d, h, w = tensor.size()
     tensor = tensor.view(d, h * w)
@@ -54,18 +57,21 @@ def gram_matrix(tensor):
 
 
 @click.command()
-@click.option('--content-image', required=True, help='Path to the content image.')
-@click.option('--style-image', required=True, help='Path to the style image.')
-@click.option('--steps', default=2000, help='Number of optimization steps (default: 2000).')
-def style_transfer(content_image, style_image, steps):
-    content = load_image(content_image).to(device)
-    style = load_image(style_image, shape=content.shape[-2:]).to(device)
+@click.option("--content-image", required=True, help="Path to the content image.")
+@click.option("--style-image", required=True, help="Path to the style image.")
+@click.option("--output-image", default="output_image.png", help="filename for the output image.")
+@click.option("--steps", default=2000, help="Number of optimization steps (default: 2000).")
+@click.option("--max-size", default=400, help="Maximum size of input images (default: 400).")
+def style_transfer(content_image, style_image, output_image, steps, max_size):
+    content = load_image(content_image, max_size=max_size).to(device)
+    style = load_image(
+        style_image, shape=content.shape[-2:], max_size=max_size).to(device)
 
     # extract features for both content and style
     content_features = get_features(content, vgg)
     style_features = get_features(style, vgg)
 
-    # calculate Gram matrix for style features
+    # calculate gram matrix for style features
     style_grams = {layer: gram_matrix(
         style_features[layer]) for layer in style_features}
 
@@ -73,8 +79,14 @@ def style_transfer(content_image, style_image, steps):
     target = content.clone().requires_grad_(True).to(device)
 
     # define weights for content and style loss
-    style_weights = {'conv1_1': 1.0, 'conv2_1': 0.8,
-                     'conv3_1': 0.5, 'conv4_1': 0.3, 'conv5_1': 0.1}
+    style_weights = {
+        "conv1_1": 1.0,
+        "conv2_1": 0.8,
+        "conv3_1": 0.5,
+        "conv4_1": 0.3,
+        "conv5_1": 0.1
+    }
+
     content_weight = 1e4
     style_weight = 1e2
 
@@ -106,16 +118,16 @@ def style_transfer(content_image, style_image, steps):
         total_loss.backward()
         optimizer.step()
 
-        # log the loss every 100 steps
-        if step % 100 == 0:
-            print(f"Step {step}, Total loss: {total_loss.item()}")
+        # log the loss every 10 steps
+        if step % 10 == 0:
+            print(f"Step {step}, total loss: {total_loss.item()}")
 
     # save the final output image
     final_image = target.clone().cpu().detach()
     final_pil_image = Image.fromarray(
         (final_image.squeeze().permute(1, 2, 0).numpy() * 255).astype("uint8"))
-    final_pil_image.save("output_image.png")
-    print("Style transfer complete! Image saved as 'output_image.png'")
+    final_pil_image.save(output_image)
+    print(f"Style transfer complete! image saved as '{output_image}'")
 
 
 if __name__ == "__main__":
