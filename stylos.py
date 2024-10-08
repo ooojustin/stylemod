@@ -1,9 +1,14 @@
 import torch
+import utils
 from torch.optim.adam import Adam
 from PIL import Image
 import click
-from torchvision import transforms, models
+from torchvision import transforms
 from torchvision.models import VGG19_Weights
+from torchvision.models import (
+    vgg19, VGG19_Weights,
+    efficientnet_b0, EfficientNet_B0_Weights
+)
 
 
 def list_available_gpus():
@@ -28,13 +33,38 @@ def get_device(gpu_index=None):
         return torch.device("cpu")
 
 
-# load the pre-trained vgg19 model
-vgg = models.vgg19(weights=VGG19_Weights.IMAGENET1K_V1).features
-for param in vgg.parameters():
-    param.requires_grad_(False)
+MODEL_MAP = {
+    "vgg19": {
+        "model_fn": vgg19,
+        "weights": VGG19_Weights.DEFAULT,
+        "content_layer": "21",
+        "style_layers": ["0", "5", "10", "19", "28"]
+    },
+    "efficientnet_b0": {
+        "model_fn": efficientnet_b0,
+        "weights": EfficientNet_B0_Weights.DEFAULT,
+        "content_layer": "6",
+        "style_layers": ["0", "2", "4", "6"]
+    },
+}
 
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# vgg.to(device)
+
+def load_model(model_name):
+    if model_name not in MODEL_MAP:
+        raise ValueError(
+            f"Model {model_name} not supported. Choose from: {list(MODEL_MAP.keys())}")
+
+    model_info = MODEL_MAP[model_name]
+    model = model_info["model_fn"](weights=model_info["weights"])
+    # print(model)
+
+    # NOTE(justin): ResNet/ViT don"t have a features attribute
+    model = model.features
+
+    for param in model.parameters():
+        param.requires_grad_(False)
+
+    return model, model_info["content_layer"], model_info["style_layers"]
 
 
 def load_image(img_path, max_size=400, shape=None):
@@ -52,27 +82,17 @@ def load_image(img_path, max_size=400, shape=None):
     return image
 
 
-# extract features from vgg19
-def get_features(image, model, layers=None):
-    if layers is None:
-        layers = {
-            '0': 'conv1_1',
-            '5': 'conv2_1',
-            '10': 'conv3_1',
-            '19': 'conv4_1',
-            '21': 'conv4_2',
-            '28': 'conv5_1'
-        }
+def get_features(image, model, layers):
+    """Extract features from specified layers or blocks."""
     features = {}
     x = image
     for name, layer in model._modules.items():
         x = layer(x)
         if name in layers:
-            features[layers[name]] = x
+            features[name] = x
     return features
 
 
-# calculate the gram matrix for style loss
 def gram_matrix(tensor):
     _, d, h, w = tensor.size()
     tensor = tensor.view(d, h * w)
@@ -86,18 +106,27 @@ def gram_matrix(tensor):
 @click.option("--output-image", default="output_image.png", help="filename for the output image.")
 @click.option("--steps", default=2000, help="Number of optimization steps (default: 2000).")
 @click.option("--max-size", default=400, help="Maximum size of input images (default: 400).")
+@click.option("--model", default="vgg19", type=str, help="Model to use for feature extraction (default: vgg19).")
 @click.option("--gpu-index", default=None, type=int, help="GPU index to use (default: 0 if available).")
-def style_transfer(content_image, style_image, output_image, steps, max_size, gpu_index):
+def style_transfer(content_image, style_image, output_image, steps, max_size, model, gpu_index):
     list_available_gpus()
     device = get_device(gpu_index)
+
+    model_str = model
+    model, content_layer, style_layers = load_model(model)
+    model = model.to(device)
 
     content = load_image(content_image, max_size=max_size).to(device)
     style = load_image(
         style_image, shape=content.shape[-2:], max_size=max_size).to(device)
 
     # extract features for both content and style
-    content_features = get_features(content, vgg)
-    style_features = get_features(style, vgg)
+    content_features = get_features(content, model, layers=[content_layer])
+    style_features = get_features(style, model, layers=style_layers)
+
+    # content loss using the models designated content layer
+    content_loss = torch.mean(
+        (content_features[content_layer] - content_features[content_layer]) ** 2)
 
     # calculate gram matrix for style features
     style_grams = {layer: gram_matrix(
@@ -107,37 +136,57 @@ def style_transfer(content_image, style_image, output_image, steps, max_size, gp
     target = content.clone().requires_grad_(True).to(device)
 
     # define weights for content and style loss
-    style_weights = {
-        "conv1_1": 1.0,
-        "conv2_1": 0.8,
-        "conv3_1": 0.5,
-        "conv4_1": 0.3,
-        "conv5_1": 0.1
-    }
+    style_weights = {}
+    print("Model:", model_str)
+    if "vgg" in model_str:
+        style_weights = {
+            # Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+            "0": 1.0,
+            # Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+            "5": 0.8,
+            # Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+            "10": 0.5,
+            # Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+            "19": 0.3,
+            # Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+            "28": 0.1
+        }
+    elif "efficientnet" in model_str:
+        style_weights = {
+            # Conv2d(3, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+            "0": 1.0,
+            # MBConv(Conv2d(16, 96, kernel_size=(1, 1), stride=(1, 1), bias=False), Conv2d(96, 96, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), groups=96, bias=False))
+            "2": 0.8,
+            # MBConv(Conv2d(24, 144, kernel_size=(1, 1), stride=(1, 1), bias=False), Conv2d(144, 144, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=144, bias=False))
+            "4": 0.5,
+            # MBConv(Conv2d(40, 240, kernel_size=(1, 1), stride=(1, 1), bias=False), Conv2d(240, 240, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2), groups=240, bias=False))
+            "6": 0.3,
+            # Conv2d(320, 1280, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            "8": 0.1
+        }
 
     content_weight = 1e4
     style_weight = 1e2
+    # print("style_weights:", style_weights)
 
     optimizer = Adam([target], lr=0.003)
 
     # optimization loop
     for step in range(steps):
-        target_features = get_features(target, vgg)
+        target_features = get_features(
+            target, model, layers=[content_layer] + style_layers)
 
-        # content loss
+        # calculate content loss
         content_loss = torch.mean(
-            (target_features["conv4_2"] - content_features["conv4_2"]) ** 2)
+            (target_features[content_layer] - content_features[content_layer]) ** 2)
 
-        # style loss
+        # calculate style loss
         style_loss = 0
-        for layer in style_weights:
-            target_feature = target_features[layer]
-            target_gram = gram_matrix(target_feature)
+        for layer in style_layers:
+            target_gram = gram_matrix(target_features[layer])
             style_gram = style_grams[layer]
-            layer_style_loss = style_weights[layer] * \
+            style_loss += style_weights[layer] * \
                 torch.mean((target_gram - style_gram) ** 2)
-            style_loss += layer_style_loss / \
-                (target_feature.size(1) * target_feature.size(2))
 
         total_loss = content_weight * content_loss + style_weight * style_loss
 
