@@ -1,5 +1,4 @@
 import torch
-import utils
 from torch.optim.adam import Adam
 from PIL import Image
 import click
