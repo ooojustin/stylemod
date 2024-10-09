@@ -2,7 +2,7 @@ import torch
 from torch.optim.adam import Adam
 from PIL import Image
 import click
-from stylos.models import Model
+from stylos.models import Models
 from torchvision import transforms
 
 
@@ -43,24 +43,6 @@ def load_image(img_path, max_size=400, shape=None):
     return image
 
 
-def get_features(image, model, layers):
-    """Extract features from specified layers or blocks."""
-    features = {}
-    x = image
-    for name, layer in model._modules.items():
-        x = layer(x)
-        if name in layers:
-            features[name] = x
-    return features
-
-
-def gram_matrix(tensor):
-    _, d, h, w = tensor.size()
-    tensor = tensor.view(d, h * w)
-    gram = torch.mm(tensor, tensor.t())
-    return gram
-
-
 @click.command()
 @click.option("--content-image", required=True, help="Path to the content image.")
 @click.option("--style-image", required=True, help="Path to the style image.")
@@ -73,28 +55,32 @@ def style_transfer(content_image, style_image, output_image, steps, max_size, mo
     list_available_gpus()
     device = get_device(gpu_index)
 
-    model_info = Model.load(model)
-    model = model_info.get_model_module(device)
-    print("Model:", model_info.name)
+    model = Models.load(model)
+    model.set_device(device)
 
-    content_layer = model_info.content_layer
-    style_layers = model_info.style_layers
-    style_weights = model_info.style_weights
+    # model_module = model.get_model_module()
+    # print(model_module)
+
+    print("Model:", model.name)
+
+    content_layer = model.content_layer
+    style_layers = model.style_layers
+    style_weights = model.style_weights
 
     content = load_image(content_image, max_size=max_size).to(device)
     style = load_image(
         style_image, shape=content.shape[-2:], max_size=max_size).to(device)
 
     # extract features for both content and style
-    content_features = get_features(content, model, layers=[content_layer])
-    style_features = get_features(style, model, layers=style_layers)
+    content_features = model.get_features(content, layers=[content_layer])
+    style_features = model.get_features(style, layers=style_layers)
 
     # content loss using the models designated content layer
     content_loss = torch.mean(
         (content_features[content_layer] - content_features[content_layer]) ** 2)
 
     # calculate gram matrix for style features
-    style_grams = {layer: gram_matrix(
+    style_grams = {layer: model.gram_matrix(
         style_features[layer]) for layer in style_features}
 
     # create target image (copy of content) for optimization
@@ -107,8 +93,8 @@ def style_transfer(content_image, style_image, output_image, steps, max_size, mo
 
     # optimization loop
     for step in range(steps):
-        target_features = get_features(
-            target, model, layers=[content_layer] + style_layers)
+        target_features = model.get_features(
+            target, layers=[content_layer] + style_layers)
 
         # calculate content loss
         content_loss = torch.mean(
@@ -117,7 +103,7 @@ def style_transfer(content_image, style_image, output_image, steps, max_size, mo
         # calculate style loss
         style_loss = 0
         for layer in style_layers:
-            target_gram = gram_matrix(target_features[layer])
+            target_gram = model.gram_matrix(target_features[layer])
             style_gram = style_grams[layer]
             style_loss += style_weights[layer] * \
                 torch.mean((target_gram - style_gram) ** 2)
