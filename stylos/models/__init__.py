@@ -7,6 +7,7 @@ from stylos.models.resnet50 import RESNET50
 from stylos.models.convnext import CONVNEXT_TINY
 from stylos.models.swin_t import SWIN_T
 from stylos.models.densenet121 import DENSENET121
+from stylos.models.efficientnet_v2_s import EFFICIENTNET_V2
 
 
 class Models(Enum):
@@ -17,6 +18,7 @@ class Models(Enum):
     CONVNEXT_TINY = CONVNEXT_TINY
     SWIN_T = SWIN_T
     DENSENET121 = DENSENET121
+    EFFICIENTNET_V2 = EFFICIENTNET_V2
 
     @staticmethod
     def load(model_name: str) -> Model:

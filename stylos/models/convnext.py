@@ -1,6 +1,7 @@
 from stylos.models.model import Model
 from torchvision.models import convnext_tiny, ConvNeXt_Tiny_Weights
 
+
 CONVNEXT_TINY = Model(
     name="CONVNEXT_TINY",
     model_fn=convnext_tiny,
