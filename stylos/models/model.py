@@ -41,11 +41,13 @@ class Model:
         features = {}
         x = image
         model = self.get_model_module()
+
         for name, layer in model._modules.items():
             assert layer
             x = layer(x)
             if name in layers:
                 features[name] = x
+
         return features
 
     def gram_matrix(self, tensor):

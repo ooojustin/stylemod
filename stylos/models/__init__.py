@@ -3,12 +3,14 @@ from stylos.models.model import Model
 from stylos.models.vgg19 import VGG19
 from stylos.models.efficientnet_b0 import EFFICIENTNET_B0
 from stylos.models.vit_b_16 import VIT_B_16
+from stylos.models.resnet50 import RESNET50
 
 
 class Models(Enum):
     VGG19 = VGG19
     EFFICIENTNET_B0 = EFFICIENTNET_B0
     VIT_B_16 = VIT_B_16
+    RESNET50 = RESNET50
 
     @staticmethod
     def load(model_name: str) -> Model:
