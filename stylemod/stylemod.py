@@ -1,6 +1,6 @@
 import click
 import torch
-from stylemod.models import Models
+from stylemod.models.factory import ModelFactory
 from torchvision import transforms
 from torch.optim.adam import Adam
 from PIL import Image
@@ -55,7 +55,7 @@ def style_transfer(content_image, style_image, output_image, steps, max_size, mo
     list_available_gpus()
     device = get_device(gpu_index)
 
-    model = Models.load(model)
+    model = ModelFactory.get_model(model)
     model.set_device(device)
     if model.eval_mode:
         model.eval()
