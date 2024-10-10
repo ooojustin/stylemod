@@ -5,6 +5,8 @@ from stylos.models.efficientnet_b0 import EFFICIENTNET_B0
 from stylos.models.vit_b_16 import VIT_B_16
 from stylos.models.resnet50 import RESNET50
 from stylos.models.convnext import CONVNEXT_TINY
+from stylos.models.swin_t import SWIN_T
+from stylos.models.densenet121 import DENSENET121
 
 
 class Models(Enum):
@@ -13,6 +15,8 @@ class Models(Enum):
     VIT_B_16 = VIT_B_16
     RESNET50 = RESNET50
     CONVNEXT_TINY = CONVNEXT_TINY
+    SWIN_T = SWIN_T
+    DENSENET121 = DENSENET121
 
     @staticmethod
     def load(model_name: str) -> Model:

@@ -6,6 +6,7 @@ from torchvision.models import vit_b_16, ViT_B_16_Weights
 
 @dataclass
 class ViTModel(Model):
+
     def get_features(self, image, layers):
         """Extract features from transformer blocks in the vision transformer."""
         features = {}

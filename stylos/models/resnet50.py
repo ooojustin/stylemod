@@ -5,8 +5,8 @@ from torchvision.models import resnet50, ResNet50_Weights
 
 @dataclass
 class ResNetModel(Model):
+
     def get_features(self, image, layers):
-        """Extract features from specified layers for ResNet."""
         features = {}
         x = image
         model = self.get_model_module()
