@@ -18,7 +18,6 @@ class ResNetModel(Model):
                 features[name] = x
 
             # NOTE(justin): stop forward pass before reaching the fully connected layer (avgpool is right before fc)
-            # global average pooling reduces the spatial dimensions (height, width) to 1x1, flattening the feature map into a 1D tensor for each channel
             if name == 'avgpool':
                 break
 

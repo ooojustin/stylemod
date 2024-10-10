@@ -1,9 +1,9 @@
+import click
 import torch
 from torch.optim.adam import Adam
 from PIL import Image
-import click
-from stylos.models import Models
 from torchvision import transforms
+from stylos.models import Models
 
 
 def list_available_gpus():
@@ -46,21 +46,22 @@ def load_image(img_path, max_size=400, shape=None):
 @click.command()
 @click.option("--content-image", required=True, help="Path to the content image.")
 @click.option("--style-image", required=True, help="Path to the style image.")
-@click.option("--output-image", default="output_image.png", help="filename for the output image.")
-@click.option("--steps", default=2000, help="Number of optimization steps (default: 2000).")
-@click.option("--max-size", default=400, help="Maximum size of input images (default: 400).")
-@click.option("--model", default="vgg19", type=str, help="Model to use for feature extraction (default: vgg19).")
-@click.option("--gpu-index", default=None, type=int, help="GPU index to use (default: 0 if available).")
+@click.option("--output-image", default="output_image.png", help="Filename for the output image. [Default: output_image.png]")
+@click.option("--steps", default=2000, help="Number of optimization steps. [Default: 2000]")
+@click.option("--max-size", default=400, help="Maximum size of input images. [Default: 400]")
+@click.option("--model", default="vgg19", type=str, help="Model to use for feature extraction. [Default: vgg19]")
+@click.option("--gpu-index", default=None, type=int, help="GPU index to use. [Default: 0, if available]")
 def style_transfer(content_image, style_image, output_image, steps, max_size, model, gpu_index):
     list_available_gpus()
     device = get_device(gpu_index)
 
     model = Models.load(model)
     model.set_device(device)
+    if model.eval_mode:
+        model.eval()
 
     # model_module = model.get_model_module()
     # print(model_module)
-
     print("Model:", model.name)
 
     content_layer = model.content_layer
@@ -112,7 +113,7 @@ def style_transfer(content_image, style_image, output_image, steps, max_size, mo
 
         # update the target image
         optimizer.zero_grad()
-        total_loss.backward()
+        total_loss.backward(retain_graph=model.retain_graph)
         optimizer.step()
 
         # log the loss every 10 steps
@@ -125,7 +126,3 @@ def style_transfer(content_image, style_image, output_image, steps, max_size, mo
         (final_image.squeeze().permute(1, 2, 0).numpy() * 255).astype("uint8"))
     final_pil_image.save(output_image)
     print(f"Style transfer complete! image saved as '{output_image}'")
-
-
-if __name__ == "__main__":
-    style_transfer()
