@@ -1,7 +1,7 @@
 import torch
 import torchvision
+from stylemod.models.base_model import BaseModel
 from typing import Dict, List
-from stylos.models.base_model import BaseModel
 from torchvision.models import regnet_y_16gf, RegNet_Y_16GF_Weights
 
 

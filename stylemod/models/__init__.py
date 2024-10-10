@@ -1,14 +1,14 @@
 from enum import Enum
-from stylos.models.base_model import BaseModel
-from stylos.models.vgg19 import VGG19
-from stylos.models.efficientnet_b0 import EfficientNetB0
-from stylos.models.efficientnet_v2_s import EfficientNetV2
-from stylos.models.vit_b_16 import ViT_B_16
-from stylos.models.resnet50 import ResNet50
-from stylos.models.convnext import ConvNeXt_Tiny
-from stylos.models.swin_t import Swin_T
-from stylos.models.densenet121 import DenseNet121
-from stylos.models.regnet_y_16gf import RegNet_Y_16GF
+from stylemod.models.base_model import BaseModel
+from stylemod.models.vgg19 import VGG19
+from stylemod.models.efficientnet_b0 import EfficientNetB0
+from stylemod.models.efficientnet_v2_s import EfficientNetV2
+from stylemod.models.vit_b_16 import ViT_B_16
+from stylemod.models.resnet50 import ResNet50
+from stylemod.models.convnext import ConvNeXt_Tiny
+from stylemod.models.swin_t import Swin_T
+from stylemod.models.densenet121 import DenseNet121
+from stylemod.models.regnet_y_16gf import RegNet_Y_16GF
 
 
 class Models(Enum):

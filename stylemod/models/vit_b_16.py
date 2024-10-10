@@ -1,5 +1,5 @@
 import torch
-from stylos.models.base_model import BaseModel
+from stylemod.models.base_model import BaseModel
 from torchvision.models import vit_b_16, ViT_B_16_Weights
 
 

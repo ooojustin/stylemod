@@ -1,4 +1,4 @@
-from stylos.models.base_model import BaseModel
+from stylemod.models.base_model import BaseModel
 from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 
 

@@ -1,9 +1,9 @@
 import click
 import torch
+from stylemod.models import Models
+from torchvision import transforms
 from torch.optim.adam import Adam
 from PIL import Image
-from torchvision import transforms
-from stylos.models import Models
 
 
 def list_available_gpus():

@@ -1,4 +1,4 @@
-from stylos.models.base_model import BaseModel
+from stylemod.models.base_model import BaseModel
 from torchvision.models import densenet121, DenseNet121_Weights
 
 

@@ -1,5 +1,5 @@
 import torch
-from stylos.models.base_model import BaseModel
+from stylemod.models.base_model import BaseModel
 from torchvision.models import resnet50, ResNet50_Weights
 
 
