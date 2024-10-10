@@ -1,13 +1,35 @@
 import torch
 import torchvision
 from typing import Dict, List
-from dataclasses import dataclass
-from stylos.models.model import Model
+from stylos.models.base_model import BaseModel
 from torchvision.models import regnet_y_16gf, RegNet_Y_16GF_Weights
 
 
-@dataclass
-class RegNetModel(Model):
+class RegNet_Y_16GF(BaseModel):
+
+    def __init__(self):
+        super().__init__(
+            model_fn=regnet_y_16gf,
+            weights=RegNet_Y_16GF_Weights.DEFAULT,
+            name="RegNetY16GF",
+            content_layer="trunk_output",
+            style_layers=[
+                "stem",
+                "block1",
+                "block2",
+                "block3",
+                "block4"
+            ],
+            style_weights={
+                "stem": 1.0,
+                "block1": 0.8,
+                "block2": 0.6,
+                "block3": 0.4,
+                "block4": 0.2
+            },
+            eval_mode=True,
+            retain_graph=True
+        )
 
     def get_features(self, image: torch.Tensor, layers: List[str]) -> Dict[str, torch.Tensor]:
         features: Dict[str, torch.Tensor] = {}
@@ -21,9 +43,8 @@ class RegNetModel(Model):
                 for trunk_name, trunk_layer in layer.named_children():
 
                     # NOTE(justin):
-                    # we need to adjust the channels in block1 because the input tensor has 3024 channels, but block1 expects 32.
-                    # this mismatch occurs due to the transition from block4 (3024 channels) to block1 (32 channels).
-                    # a 1x1 convolution is used to reduce the channels from 3024 to 32, but the logic is applied dynamically.
+                    # this is primarily to fix the transition from block4 (3024 channels) to block1 (32 channels).
+                    # a 1x1 convolution is used to reduce the number of channels, but the logic is applied dynamically.
                     if isinstance(trunk_layer, torchvision.models.regnet.AnyStage):
                         x = self.__fix_conv2d_channels(trunk_layer, x)
 
@@ -58,27 +79,3 @@ class RegNetModel(Model):
                     return adjust_channels(tensor)
 
         return tensor
-
-
-REGNET_Y_16GF = RegNetModel(
-    name="REGNET_Y_16GF",
-    model_fn=regnet_y_16gf,
-    weights=RegNet_Y_16GF_Weights.DEFAULT,  # type: ignore[assignment]
-    content_layer="trunk_output",
-    style_layers=[
-        "stem",
-        "block1",
-        "block2",
-        "block3",
-        "block4"
-    ],
-    style_weights={
-        "stem": 1.0,
-        "block1": 0.8,
-        "block2": 0.6,
-        "block3": 0.4,
-        "block4": 0.2
-    },
-    eval_mode=True,
-    retain_graph=True
-)

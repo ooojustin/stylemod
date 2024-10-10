@@ -1,14 +1,36 @@
 import torch
-from dataclasses import dataclass
-from stylos.models.model import Model
+from stylos.models.base_model import BaseModel
 from torchvision.models import vit_b_16, ViT_B_16_Weights
 
 
-@dataclass
-class ViTModel(Model):
+class ViT_B_16(BaseModel):
+
+    def __init__(self):
+        super().__init__(
+            model_fn=vit_b_16,
+            weights=ViT_B_16_Weights.DEFAULT,
+            name="ViT_B_16",
+            content_layer="5",
+            style_layers=[
+                "1",
+                "3",
+                "5",
+                "7",
+                "9"
+            ],
+            style_weights={
+                "1": 1.0,
+                "3": 0.8,
+                "5": 0.6,
+                "7": 0.4,
+                "9": 0.2
+            },
+            eval_mode=False,
+            retain_graph=False
+        )
 
     def get_features(self, image, layers):
-        """Extract features from transformer blocks in the vision transformer."""
+        """Extract features from transformer blocks in the Vision Transformer."""
         features = {}
         model = self.get_model_module()
         x = model._process_input(image)
@@ -21,6 +43,7 @@ class ViTModel(Model):
         return features
 
     def gram_matrix(self, tensor):
+        """Calculate the gram matrix for ViT layers, handling both 3D and 4D tensors."""
         # NOTE(justin): CNNs are 4D tensors, ViTs are 3D tensors
         if tensor.dim() == 4:  # CNN (batch_size, channels, height, width)
             batch_size, d, h, w = tensor.size()
@@ -31,25 +54,3 @@ class ViTModel(Model):
 
         gram = torch.bmm(tensor, tensor.transpose(1, 2))
         return gram
-
-
-VIT_B_16 = ViTModel(
-    name="ViT_B_16",
-    model_fn=vit_b_16,
-    weights=ViT_B_16_Weights.DEFAULT,  # type: ignore[assignment]
-    content_layer="5",
-    style_layers=[
-        "1",
-        "3",
-        "5",
-        "7",
-        "9"
-    ],
-    style_weights={
-        "1": 1.0,
-        "3": 0.8,
-        "5": 0.6,
-        "7": 0.4,
-        "9": 0.2
-    }
-)

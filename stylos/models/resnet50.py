@@ -1,12 +1,35 @@
-from dataclasses import dataclass
-from stylos.models.model import Model
+import torch
+from stylos.models.base_model import BaseModel
 from torchvision.models import resnet50, ResNet50_Weights
 
 
-@dataclass
-class ResNetModel(Model):
+class ResNet50(BaseModel):
 
-    def get_features(self, image, layers):
+    def __init__(self):
+        super().__init__(
+            model_fn=resnet50,
+            weights=ResNet50_Weights.DEFAULT,
+            name="ResNet50",
+            content_layer="layer4",
+            style_layers=[
+                "conv1",
+                "layer1",
+                "layer2",
+                "layer3",
+                "layer4"
+            ],
+            style_weights={
+                "conv1": 1.0,
+                "layer1": 0.8,
+                "layer2": 0.6,
+                "layer3": 0.4,
+                "layer4": 0.2
+            },
+            eval_mode=False,
+            retain_graph=False
+        )
+
+    def get_features(self, image: torch.Tensor, layers: list) -> dict:
         features = {}
         x = image
         model = self.get_model_module()
@@ -22,25 +45,3 @@ class ResNetModel(Model):
                 break
 
         return features
-
-
-RESNET50 = ResNetModel(
-    name="RESNET50",
-    model_fn=resnet50,
-    weights=ResNet50_Weights.DEFAULT,  # type: ignore[assignment]
-    content_layer="layer4",
-    style_layers=[
-        "conv1",
-        "layer1",
-        "layer2",
-        "layer3",
-        "layer4"
-    ],
-    style_weights={
-        "conv1": 1.0,
-        "layer1": 0.8,
-        "layer2": 0.6,
-        "layer3": 0.4,
-        "layer4": 0.2
-    }
-)
