@@ -1,6 +1,7 @@
 import torch
 from torchvision import transforms
 from PIL import Image
+from typing import Optional
 
 
 def list_available_gpus():
@@ -25,19 +26,40 @@ def get_device(gpu_index=None):
         return torch.device("cpu")
 
 
-def load_image(img_path, max_size=400, shape=None):
-    image = Image.open(img_path)
+def load_image(
+    path: str,
+    max_size: Optional[int] = None,
+    shape: Optional[tuple] = None
+) -> torch.Tensor:
+    image = Image.open(path)
 
-    # resize the image to either the shape or max_size
     if shape is not None:
+        # resize the image to the provided shape
         image = image.resize(shape)
-    else:
-        size = max_size if max(image.size) > max_size else max(image.size)
-        image = image.resize((size, int(size * image.size[1] / image.size[0])))
+    elif max_size is not None:
+        # resize while perserving aspect ratio
+        original_width, original_height = image.size
+        largest_dim = max(original_width, original_height)
+        if largest_dim > max_size:
+            scale_factor = max_size / largest_dim
+            new_width = int(original_width * scale_factor)
+            new_height = int(original_height * scale_factor)
+            image = image.resize((new_width, new_height))
 
     transform = transforms.ToTensor()
     image = transform(image).unsqueeze(0)
     return image
+
+
+def clamp_tensor_size(tensor: torch.Tensor, max_size: int) -> torch.Tensor:
+    _, _, h, w = tensor.shape
+    size = max(h, w)
+    if size > max_size:
+        scale = max_size / size
+        new_h, new_w = int(h * scale), int(w * scale)
+        resize = transforms.Resize((new_h, new_w))
+        tensor = resize(tensor)
+    return tensor
 
 
 def get_full_module_path(variable):

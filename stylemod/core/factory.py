@@ -45,7 +45,16 @@ class ModelFactory:
             # inspect the module for classes that inherit from BaseModel
             for name, obj in inspect.getmembers(module, inspect.isclass):
                 if issubclass(obj, BaseModel) and obj != BaseModel:
-                    ModelFactory.register(name, obj)
+
+                    model_enum_name = None
+                    for enum_model in Model:
+                        if enum_model.value == obj:
+                            model_enum_name = enum_model.name
+                            break
+
+                    # use the enum name if found, otherwise use the detected class name
+                    model_name = model_enum_name or name
+                    ModelFactory.register(model_name, obj)
 
 
 ModelFactory.auto_register_models()

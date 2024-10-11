@@ -1,6 +1,7 @@
 import click
 from stylemod import style_transfer
 from stylemod.models import Model
+from PIL import Image
 
 
 class CaseInsensitiveChoice(click.Choice):
@@ -22,5 +23,15 @@ class CaseInsensitiveChoice(click.Choice):
 @click.option("--gpu-index", default=None, type=int, help="GPU index to use. [Default: 0, if available]")
 def run(content_image, style_image, output_image, steps, max_size, model, gpu_index):
     model_enum = Model[model]
-    style_transfer(content_image, style_image, output_image,
-                   steps, max_size, model_enum, gpu_index)
+    print("Model:", model_enum.name)
+    output = style_transfer(
+        content_image=content_image,
+        style_image=style_image,
+        steps=steps,
+        max_size=max_size,
+        model=model_enum,
+        gpu_index=gpu_index,
+        return_type="pil"
+    )
+    assert isinstance(output, Image.Image)
+    output.save(output_image)
