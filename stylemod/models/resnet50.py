@@ -1,5 +1,6 @@
 import torch
-from stylemod.models.base_model import BaseModel
+from stylemod.core.factory import ModelFactory
+from stylemod.core.base_model import BaseModel
 from torchvision.models import resnet50, ResNet50_Weights
 
 
@@ -38,3 +39,6 @@ class ResNet50(BaseModel):
                 break
 
         return features
+
+
+ModelFactory.register("ResNet50", ResNet50)

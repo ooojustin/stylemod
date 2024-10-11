@@ -1,6 +1,7 @@
 import click
 import torch
-from stylemod.models.factory import ModelFactory
+# import stylemod.models as _
+from stylemod.core.factory import ModelFactory
 from torchvision import transforms
 from torch.optim.adam import Adam
 from PIL import Image

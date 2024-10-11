@@ -1,4 +1,5 @@
-from stylemod.models.base_model import BaseModel
+from stylemod.core.factory import ModelFactory
+from stylemod.core.base_model import BaseModel
 from torchvision.models import convnext_tiny, ConvNeXt_Tiny_Weights
 
 
@@ -20,3 +21,6 @@ class ConvNeXt_Tiny(BaseModel):
             eval_mode=False,
             retain_graph=False
         )
+
+
+ModelFactory.register("ConvNeXt_Tiny", ConvNeXt_Tiny)

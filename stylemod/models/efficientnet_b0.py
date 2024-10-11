@@ -1,4 +1,5 @@
-from stylemod.models.base_model import BaseModel
+from stylemod.core.factory import ModelFactory
+from stylemod.core.base_model import BaseModel
 from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 
 
@@ -19,3 +20,6 @@ class EfficientNetB0(BaseModel):
             eval_mode=False,
             retain_graph=False
         )
+
+
+ModelFactory.register("EfficientNetB0", EfficientNetB0)

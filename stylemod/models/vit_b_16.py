@@ -1,5 +1,6 @@
 import torch
-from stylemod.models.base_model import BaseModel
+from stylemod.core.factory import ModelFactory
+from stylemod.core.base_model import BaseModel
 from torchvision.models import vit_b_16, ViT_B_16_Weights
 
 
@@ -47,3 +48,6 @@ class ViT_B_16(BaseModel):
 
         gram = torch.bmm(tensor, tensor.transpose(1, 2))
         return gram
+
+
+ModelFactory.register("ViT_B_16", ViT_B_16)

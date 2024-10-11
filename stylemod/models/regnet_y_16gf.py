@@ -1,6 +1,7 @@
 import torch
 import torchvision
-from stylemod.models.base_model import BaseModel
+from stylemod.core.factory import ModelFactory
+from stylemod.core.base_model import BaseModel
 from typing import Dict, List
 from torchvision.models import regnet_y_16gf, RegNet_Y_16GF_Weights
 
@@ -72,3 +73,6 @@ class RegNet_Y_16GF(BaseModel):
                     return adjust_channels(tensor)
 
         return tensor
+
+
+ModelFactory.register("RegNet_Y_16GF", RegNet_Y_16GF)

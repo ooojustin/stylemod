@@ -1,4 +1,5 @@
-from stylemod.models.base_model import BaseModel
+from stylemod.core.factory import ModelFactory
+from stylemod.core.base_model import BaseModel
 from torchvision.models import densenet121, DenseNet121_Weights
 
 
@@ -20,3 +21,6 @@ class DenseNet121(BaseModel):
             eval_mode=False,
             retain_graph=False
         )
+
+
+ModelFactory.register("DenseNet121", DenseNet121)

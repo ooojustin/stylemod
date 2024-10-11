@@ -1,4 +1,5 @@
-from stylemod.models.base_model import BaseModel
+from stylemod.core.factory import ModelFactory
+from stylemod.core.base_model import BaseModel
 from torchvision.models import vgg19, VGG19_Weights
 
 
@@ -20,3 +21,6 @@ class VGG19(BaseModel):
             eval_mode=False,
             retain_graph=False
         )
+
+
+ModelFactory.register("VGG19", VGG19)
