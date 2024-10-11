@@ -1,5 +1,5 @@
 from stylemod.models.base_model import BaseModel
-from typing import Dict, Callable
+from typing import Dict, Callable, Type
 
 
 class ModelFactory:
@@ -8,7 +8,7 @@ class ModelFactory:
     model_mapping: Dict[str, Callable[..., BaseModel]] = {}
 
     @staticmethod
-    def get_model(model_name: str) -> BaseModel:
+    def create(model_name: str) -> BaseModel:
         """Create and return an instance of the requested model."""
         try:
             model_name = model_name.upper()
@@ -20,7 +20,7 @@ class ModelFactory:
         return model
 
     @staticmethod
-    def register_model(model_name: str, model_class: Callable[..., BaseModel]):
+    def register(model_name: str, model_class: Type[BaseModel]):
         """Dynamically register a new model to the factory."""
         model_name = model_name.upper()
         if model_name in ModelFactory.model_mapping:

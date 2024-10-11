@@ -13,13 +13,6 @@ class RegNet_Y_16GF(BaseModel):
             weights=RegNet_Y_16GF_Weights.DEFAULT,
             name="RegNetY16GF",
             content_layer="trunk_output",
-            style_layers=[
-                "stem",
-                "block1",
-                "block2",
-                "block3",
-                "block4"
-            ],
             style_weights={
                 "stem": 1.0,
                 "block1": 0.8,

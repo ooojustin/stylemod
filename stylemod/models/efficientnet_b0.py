@@ -10,13 +10,11 @@ class EfficientNetB0(BaseModel):
             weights=EfficientNet_B0_Weights.DEFAULT,
             name="EfficientNetB0",
             content_layer="6",
-            style_layers=["0", "2", "4", "6"],
             style_weights={
                 "0": 1.0,
                 "2": 0.8,
                 "4": 0.5,
-                "6": 0.3,
-                "8": 0.1
+                "6": 0.3
             },
             eval_mode=False,
             retain_graph=False

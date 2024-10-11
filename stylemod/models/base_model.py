@@ -46,7 +46,6 @@ class BaseModel(AbstractBaseModel):
         weights=None,
         name: str = "",
         content_layer: str = "",
-        style_layers: List[str] = [],
         style_weights: Dict[str, float] = {},
         eval_mode: bool = False,
         retain_graph: bool = False
@@ -56,7 +55,7 @@ class BaseModel(AbstractBaseModel):
         self.model_fn = model_fn
         self.weights = weights
         self.content_layer = content_layer
-        self.style_layers = style_layers
+        self.style_layers = list(style_weights.keys())
         self.style_weights = style_weights
         self.eval_mode = eval_mode
         self.retain_graph = retain_graph

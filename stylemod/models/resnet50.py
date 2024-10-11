@@ -11,13 +11,6 @@ class ResNet50(BaseModel):
             weights=ResNet50_Weights.DEFAULT,
             name="ResNet50",
             content_layer="layer4",
-            style_layers=[
-                "conv1",
-                "layer1",
-                "layer2",
-                "layer3",
-                "layer4"
-            ],
             style_weights={
                 "conv1": 1.0,
                 "layer1": 0.8,

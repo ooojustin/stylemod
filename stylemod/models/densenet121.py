@@ -10,13 +10,6 @@ class DenseNet121(BaseModel):
             weights=DenseNet121_Weights.DEFAULT,
             name="DenseNet121",
             content_layer="denseblock4",
-            style_layers=[
-                "conv0",
-                "denseblock1",
-                "denseblock2",
-                "denseblock3",
-                "denseblock4"
-            ],
             style_weights={
                 "conv0": 1.0,
                 "denseblock1": 0.8,

@@ -11,13 +11,6 @@ class ViT_B_16(BaseModel):
             weights=ViT_B_16_Weights.DEFAULT,
             name="ViT_B_16",
             content_layer="5",
-            style_layers=[
-                "1",
-                "3",
-                "5",
-                "7",
-                "9"
-            ],
             style_weights={
                 "1": 1.0,
                 "3": 0.8,

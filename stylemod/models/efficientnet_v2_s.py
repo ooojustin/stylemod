@@ -10,7 +10,6 @@ class EfficientNetV2(BaseModel):
             weights=EfficientNet_V2_S_Weights.DEFAULT,
             name="EfficientNetV2",
             content_layer="4",
-            style_layers=["0", "1", "2", "4", "6"],
             style_weights={
                 "0": 1.0,
                 "1": 0.8,

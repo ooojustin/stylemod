@@ -11,13 +11,6 @@ class Swin_T(BaseModel):
             weights=Swin_T_Weights.DEFAULT,
             name="Swin_T",
             content_layer="4",
-            style_layers=[
-                "0",
-                "1",
-                "2",
-                "3",
-                "4"
-            ],
             style_weights={
                 "0": 1.0,
                 "1": 0.8,

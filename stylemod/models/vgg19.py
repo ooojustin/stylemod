@@ -10,13 +10,6 @@ class VGG19(BaseModel):
             weights=VGG19_Weights.DEFAULT,
             name="VGG19",
             content_layer="21",
-            style_layers=[
-                "0",
-                "5",
-                "10",
-                "19",
-                "28"
-            ],
             style_weights={
                 "0": 1.0,
                 "5": 0.8,
