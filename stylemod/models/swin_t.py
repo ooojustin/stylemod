@@ -1,4 +1,3 @@
-from stylemod.core.factory import ModelFactory
 from stylemod.core.base_model import BaseModel
 from torchvision.models import swin_t, Swin_T_Weights
 
@@ -21,6 +20,3 @@ class Swin_T(BaseModel):
             eval_mode=False,
             retain_graph=False
         )
-
-
-ModelFactory.register("Swin_T", Swin_T)

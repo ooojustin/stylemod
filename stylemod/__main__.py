@@ -1,4 +1,4 @@
-from stylemod.stylemod import style_transfer
+from stylemod import cli
 
 if __name__ == "__main__":
-    style_transfer()  # type: ignore
+    cli.run()  # type: ignore
