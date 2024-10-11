@@ -17,6 +17,7 @@ class DenseNet121(BaseModel):
                 "denseblock3": 0.4,
                 "denseblock4": 0.2
             },
+            normalization=((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
             eval_mode=False,
             retain_graph=False
         )

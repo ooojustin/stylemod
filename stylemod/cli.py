@@ -17,7 +17,7 @@ class CaseInsensitiveChoice(click.Choice):
 @click.option("--content-image", required=True, help="Path to the content image.")
 @click.option("--style-image", required=True, help="Path to the style image.")
 @click.option("--output-image", default="output_image.png", help="Filename for the output image. [Default: output_image.png]")
-@click.option("--steps", default=2000, help="Number of optimization steps. [Default: 2000]")
+@click.option("--steps", default=1000, help="Number of optimization steps. [Default: 1000]")
 @click.option("--max-size", default=400, help="Maximum size of input images. [Default: 400]")
 @click.option("--model", type=CaseInsensitiveChoice([model.name for model in Model]), default="VGG19", help="Model to use for feature extraction. [Default: VGG19]")
 @click.option("--gpu-index", default=None, type=int, help="GPU index to use. [Default: 0, if available]")

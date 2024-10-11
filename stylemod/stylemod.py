@@ -38,7 +38,10 @@ def style_transfer(
     style_weights = model_instance.style_weights
 
     if isinstance(content_image, str):
-        content = utils.load_image(content_image, max_size=max_size).to(device)
+        content = utils.load_image(
+            path=content_image,
+            max_size=max_size
+        ).to(device)
     elif isinstance(content_image, torch.Tensor):
         content = content_image.to(device)
         if max_size is not None:
@@ -49,7 +52,10 @@ def style_transfer(
 
     if isinstance(style_image, str):
         style = utils.load_image(
-            style_image, shape=content.shape[-2:], max_size=max_size).to(device)
+            path=style_image,
+            shape=content.shape[-2:],
+            max_size=max_size
+        ).to(device)
     elif isinstance(style_image, torch.Tensor):
         style = style_image.to(device)
         if max_size is not None:
@@ -57,6 +63,10 @@ def style_transfer(
     else:
         raise ValueError(
             f"Invalid type for style_image: expected str or torch.Tensor, but got {type(style_image)}.")
+
+    if model_instance.normalization is not None:
+        content = model_instance.normalize_tensor(content)
+        style = model_instance.normalize_tensor(style)
 
     content_features = model_instance.get_features(
         content, layers=[content_layer])
@@ -94,12 +104,21 @@ def style_transfer(
         if step % 10 == 0:
             print(f"Step {step}, total loss: {total_loss.item()}")
 
-    final_image = target.clone().cpu().detach()
+    output_tensor = target.clone().cpu().detach()
     print(f"Style transfer complete!")
 
     if return_type == "pil":
-        final_pil_image = Image.fromarray(
-            (final_image.squeeze().permute(1, 2, 0).numpy() * 255).astype("uint8"))
-        return final_pil_image
 
-    return final_image
+        if model_instance.normalization is not None:
+            mean, std = model_instance.normalization
+            for t, m, s in zip(output_tensor, mean, std):
+                t.mul_(s).add_(m)
+
+        # permutation: [channels, height, width] -> [height, width, channels]
+        output_tensor = output_tensor.clamp(0, 1).squeeze()
+        output_tensor = output_tensor.permute(1, 2, 0)
+        output_numpy = (output_tensor.numpy() * 255).astype("uint8")
+        output_pil = Image.fromarray(output_numpy)
+        return output_pil
+
+    return output_tensor

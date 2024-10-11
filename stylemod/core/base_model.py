@@ -1,6 +1,10 @@
 import torch
+import torchvision.transforms as transforms
 from abc import ABC, abstractmethod
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Tuple, Optional
+
+NormalizationType = Tuple[Tuple[float, float, float],
+                          Tuple[float, float, float]]
 
 
 class AbstractBaseModel(ABC):
@@ -36,6 +40,16 @@ class AbstractBaseModel(ABC):
         """Calculate the gram matrix for the tensor."""
         pass
 
+    @abstractmethod
+    def normalize_tensor(self, tensor: torch.Tensor) -> torch.Tensor:
+        """Normalize a given tensor using the model-specific normalization values."""
+        pass
+
+    @abstractmethod
+    def denormalize_tensor(self, tensor: torch.Tensor) -> torch.Tensor:
+        """Denormalize a given tensor by reversing the model-specific normalization values."""
+        pass
+
 
 class BaseModel(AbstractBaseModel):
     """Base class providing default implementations of the abstract methods."""
@@ -47,6 +61,7 @@ class BaseModel(AbstractBaseModel):
         name: str = "",
         content_layer: str = "",
         style_weights: Dict[str, float] = {},
+        normalization: Optional[NormalizationType] = None,
         eval_mode: bool = False,
         retain_graph: bool = False
     ):
@@ -57,6 +72,7 @@ class BaseModel(AbstractBaseModel):
         self.content_layer = content_layer
         self.style_layers = list(style_weights.keys())
         self.style_weights = style_weights
+        self.normalization = normalization
         self.eval_mode = eval_mode
         self.retain_graph = retain_graph
         self.model = None
@@ -112,5 +128,28 @@ class BaseModel(AbstractBaseModel):
         _, d, h, w = tensor.size()
         tensor = tensor.view(d, h * w)
         gram = torch.mm(tensor, tensor.t())
-        gram /= h * w  # TODO(justin): make gram matrix normalization optional
+        # gram /= h * w  # TODO(justin): make gram matrix normalization optional
         return gram
+
+    def normalize_tensor(self, tensor: torch.Tensor) -> torch.Tensor:
+        """Normalize a given tensor using the model-specific normalization values."""
+        if not self.normalization:
+            return tensor
+        mean, std = self.normalization
+        normalizer = transforms.Normalize(mean=mean, std=std)
+        return normalizer(tensor)
+
+    def denormalize_tensor(self, tensor: torch.Tensor, copy: bool = False) -> torch.Tensor:
+        """Denormalize a given tensor by reversing the model-specific normalization values."""
+        if not self.normalization:
+            return tensor
+        mean, std = self.normalization
+        if copy:
+            new_tensor = tensor.clone()
+            for t, m, s in zip(new_tensor, mean, std):
+                t.mul_(s).add_(m)
+            return new_tensor
+        else:
+            for t, m, s in zip(tensor, mean, std):
+                t.mul_(s).add_(m)
+            return tensor

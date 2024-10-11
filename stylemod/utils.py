@@ -1,5 +1,5 @@
 import torch
-from torchvision import transforms
+import torchvision.transforms as transforms
 from PIL import Image
 from typing import Optional
 
@@ -47,8 +47,8 @@ def load_image(
             image = image.resize((new_width, new_height))
 
     transform = transforms.ToTensor()
-    image = transform(image).unsqueeze(0)
-    return image
+    image_tensor = transform(image).unsqueeze(0)
+    return image_tensor
 
 
 def clamp_tensor_size(tensor: torch.Tensor, max_size: int) -> torch.Tensor:

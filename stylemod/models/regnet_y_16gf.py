@@ -20,6 +20,7 @@ class RegNet_Y_16GF(BaseModel):
                 "block3": 0.4,
                 "block4": 0.2
             },
+            normalization=((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
             eval_mode=True,
             retain_graph=True
         )
@@ -55,6 +56,8 @@ class RegNet_Y_16GF(BaseModel):
         return features
 
     def __fix_conv2d_channels(self, layer: torchvision.models.regnet.AnyStage, tensor: torch.Tensor) -> torch.Tensor:
+        device = tensor.device
+
         for _, block in layer.named_children():
             conv2d_norm_layers = [
                 layer for _, layer in block.named_children()
@@ -68,7 +71,7 @@ class RegNet_Y_16GF(BaseModel):
 
                 if tensor.shape[1] != conv_layer.in_channels:
                     adjust_channels = torch.nn.Conv2d(
-                        tensor.shape[1], conv_layer.in_channels, kernel_size=1)
+                        tensor.shape[1], conv_layer.in_channels, kernel_size=1).to(device)
                     return adjust_channels(tensor)
 
         return tensor

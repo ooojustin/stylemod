@@ -17,6 +17,7 @@ class Swin_T(BaseModel):
                 "3": 0.4,
                 "4": 0.2
             },
+            normalization=((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             eval_mode=False,
             retain_graph=False
         )

@@ -18,6 +18,7 @@ class ViT_B_16(BaseModel):
                 "7": 0.4,
                 "9": 0.2
             },
+            normalization=((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             eval_mode=False,
             retain_graph=False
         )
