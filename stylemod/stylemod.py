@@ -1,7 +1,11 @@
 import torch
+import pkgutil
+import importlib
+import inspect
 from stylemod.core.gv import Graphviz, Style
 from stylemod.core.factory import ModelFactory
 from stylemod.core.base import BaseModel
+from stylemod.core.cnn import CNNBaseModel
 from stylemod.core.transformer import TransformerBaseModel
 from stylemod.models import Model
 from stylemod import utils
@@ -159,33 +163,33 @@ def generate_class_hierarchy(show_funcs: bool = False) -> Digraph:
         dg.node("A", "AbstractBaseModel")
     dg.node("B", "BaseModel")
 
+    cnn_models = []
+    transformer_models = []
+
+    # populate lists of cnn/transformer models for subgraphs
+    pkg = "stylemod.models"
+    for _, module_name, _ in pkgutil.iter_modules(importlib.import_module(pkg).__path__):
+        module = importlib.import_module(f"{pkg}.{module_name}")
+        for name, obj in inspect.getmembers(module, inspect.isclass):
+            if issubclass(obj, CNNBaseModel) and obj not in [BaseModel, CNNBaseModel]:
+                cnn_models.append(name)
+            elif issubclass(obj, TransformerBaseModel) and obj not in [BaseModel, TransformerBaseModel]:
+                transformer_models.append(name)
+
     # subgraph for cnn based models
     with dg.subgraph(name="cluster_CNN") as cnn:  # type: ignore
         cnn.attr(label="CNN Models", color=sg_color_1, fontcolor=sg_font_color)
-
-        # cnn model nodes
         cnn.node("C", "CNNBaseModel")
-        cnn.node("E", "ConvNeXt_Tiny")
-        cnn.node("F", "DenseNet121")
-        cnn.node("G", "EfficientNetB0")
-        cnn.node("H", "EfficientNetV2")
-        cnn.node("I", "RegNet_Y_16GF")
-        cnn.node("J", "ResNet50")
-        cnn.node("L", "VGG19")
 
-        # connect cnn models to CNNBaseModel
-        cnn.edge("C", "E")
-        cnn.edge("C", "F")
-        cnn.edge("C", "G")
-        cnn.edge("C", "H")
-        cnn.edge("C", "I")
-        cnn.edge("C", "J")
-        cnn.edge("C", "L")
+        for model_name in cnn_models:
+            cnn.node(model_name, model_name)
+            cnn.edge("C", model_name)
 
-    # subgraph for transformer-based models
+    # subgraph for transformer based models
     with dg.subgraph(name="cluster_Transformer") as transformer:  # type: ignore
         transformer.attr(label="Transformer Models",
                          color=sg_color_2, fontcolor=sg_font_color)
+
         if show_funcs:
             transformer.node("D", label=(
                 f'''<
@@ -200,14 +204,11 @@ def generate_class_hierarchy(show_funcs: bool = False) -> Digraph:
         else:
             transformer.node("D", "TransformerBaseModel")
 
-        transformer.node("K", "Swin_T")
-        transformer.node("M", "ViT_B_16")
+        for model_name in transformer_models:
+            transformer.node(model_name, model_name)
+            transformer.edge("D", model_name)
 
-        # connect transformer models to TransformerBaseModel
-        transformer.edge("D", "K")
-        transformer.edge("D", "M")
-
-    # edges for hierarchy connections
+    # connect high level nodes
     dg.edge("A", "B")  # AbstractBaseModel -> BaseModel
     dg.edge("B", "C")  # BaseModel -> CNNBaseModel
     dg.edge("B", "D")  # BaseModel -> TransformerBaseModel
