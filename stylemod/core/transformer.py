@@ -33,19 +33,29 @@ class TransformerBaseModel(BaseModel):
 
     @abstractmethod
     def get_attention(self, image: torch.Tensor) -> torch.Tensor:
-        pass
+        raise NotImplementedError("Method not implemented: 'get_attention'")
 
-    def calc_style_loss(self, target: torch.Tensor) -> torch.Tensor:
+    def calc_content_loss(self, target: torch.Tensor, content_features: Dict[str, torch.Tensor]) -> torch.Tensor:
+        target_features = self.get_features(
+            target, layers=[self.content_layer])
+        return torch.mean((target_features[self.content_layer] - content_features[self.content_layer]) ** 2)
+
+    def calc_style_loss(self, target: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         assert self.style_attention is not None, "Style attention maps must be precomputed. (call model.compute_style_attention())"
         target_attention = self.get_attention(target)
         loss = torch.tensor(0.0, device=target.device)
         for layer in self.style_layers:
             target_gm = self.calc_gram_matrix(target_attention[int(layer)])
-            style_gm = self.calc_gram_matrix(
-                self.style_attention[int(layer)])
+            style_gm = self.calc_gram_matrix(self.style_attention[int(layer)])
             loss += self.style_weights[layer] * \
                 torch.mean((target_gm - style_gm) ** 2)
         return loss
+
+    def forward(self, target: torch.Tensor, content_features: Dict[str, torch.Tensor], style_features: Dict[str, torch.Tensor], content_weight: float, style_weight: float) -> torch.Tensor:
+        content_loss = self.calc_content_loss(target, content_features)
+        style_loss = self.calc_style_loss(target)
+        total_loss = content_weight * content_loss + style_weight * style_loss
+        return total_loss
 
     def compute_style_attention(self, style_image: torch.Tensor) -> torch.Tensor:
         self.style_attention = self.get_attention(style_image)

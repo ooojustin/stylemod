@@ -34,6 +34,6 @@ class ResNet50(CNNBaseModel):
             if name in layers:
                 features[name] = x
             # stop before fc layer
-            if name == 'avgpool':
+            if name == "avgpool":
                 break
         return features

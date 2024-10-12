@@ -50,13 +50,11 @@ class RegNet_Y_16GF(CNNBaseModel):
     def __fix_conv2d_channels(self, layer: torchvision.models.regnet.AnyStage, tensor: torch.Tensor) -> torch.Tensor:
         device = tensor.device
         for _, block in layer.named_children():
-            for c_layer in [
+            for c_layer, _ in [
                 layer for _, layer in block.named_children()
                 if isinstance(layer, torchvision.ops.misc.Conv2dNormActivation)
             ]:
-                if not isinstance(c_layer, torch.nn.Conv2d):
-                    continue
-                if tensor.shape[1] != c_layer.in_channels:
+                if isinstance(c_layer, torch.nn.Conv2d) and tensor.shape[1] != c_layer.in_channels:
                     adjust = torch.nn.Conv2d(
                         tensor.shape[1], c_layer.in_channels, kernel_size=1).to(device)
                     return adjust(tensor)

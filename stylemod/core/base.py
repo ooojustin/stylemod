@@ -48,14 +48,34 @@ class BaseModel(AbstractBaseModel):
         assert self.model is not None, "Model initialization failed."
         return self.model
 
-    def set_device(self, device: torch.device) -> torch.nn.Module:
-        self.model = self.get_model_module().to(device)
-        return self.model
-
     def eval(self) -> torch.nn.Module:
         model = self.get_model_module()
         self.model = model.eval()
         return self.model
+
+    def set_device(self, device: torch.device) -> torch.nn.Module:
+        self.model = self.get_model_module().to(device)
+        return self.model
+
+    def normalize_tensor(self, tensor: torch.Tensor) -> torch.Tensor:
+        if not self.normalization:
+            warnings.warn(
+                "Called 'normalize_tensor' with empty normalization attribute. Returning unchanged tensor.", UserWarning)
+            return tensor
+        mean, std = self.normalization
+        normalizer = transforms.Normalize(mean=mean, std=std)
+        return normalizer(tensor)
+
+    def denormalize_tensor(self, tensor: torch.Tensor, clone: bool = False) -> torch.Tensor:
+        if not self.normalization:
+            warnings.warn(
+                "Called 'denormalize_tensor' with empty 'normalization' attribute. Returning unchanged tensor.", UserWarning)
+            return tensor
+        mean, std = self.normalization
+        tensor = tensor.clone() if clone else tensor
+        for t, m, s in zip(tensor, mean, std):
+            t.mul_(s).add_(m)
+        return tensor
 
     def get_features(self, image: torch.Tensor, layers: List[str]) -> Dict[str, torch.Tensor]:
         features: Dict[str, torch.Tensor] = {}
@@ -69,6 +89,7 @@ class BaseModel(AbstractBaseModel):
         return features
 
     def calc_gram_matrix(self, tensor: torch.Tensor) -> torch.Tensor:
+        # default implementation should support both CNNs and Transformers
         if tensor.dim() == 4:
             bs, ch, h, w = tensor.size()
             tensor = tensor.view(bs * ch, h * w)
@@ -81,23 +102,3 @@ class BaseModel(AbstractBaseModel):
             raise ValueError(
                 "Default calc_gram_matrix implementation only supports either 3 dimensions (CNNs: [batch_size, seq_len, embedding_dim]) or 4 dimensions (Transformers: [batch_size, seq_len, embedding_dim] ).")
         return gm
-
-    def normalize_tensor(self, tensor: torch.Tensor) -> torch.Tensor:
-        if not self.normalization:
-            warnings.warn(
-                "Called 'normalize_tensor' with empty normalization unattribute. Returning unchanged tensor.", UserWarning)
-            return tensor
-        mean, std = self.normalization
-        normalizer = transforms.Normalize(mean=mean, std=std)
-        return normalizer(tensor)
-
-    def denormalize_tensor(self, tensor: torch.Tensor, clone: bool = False) -> torch.Tensor:
-        if not self.normalization:
-            warnings.warn(
-                "Called 'denormalize_tensor' with empty 'normalization' unattribute. Returning unchanged tensor.", UserWarning)
-            return tensor
-        mean, std = self.normalization
-        tensor = tensor.clone() if clone else tensor
-        for t, m, s in zip(tensor, mean, std):
-            t.mul_(s).add_(m)
-        return tensor

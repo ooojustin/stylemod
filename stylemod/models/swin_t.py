@@ -48,7 +48,7 @@ class Swin_T(TransformerBaseModel):
             for block in stage.children():
                 if not isinstance(block, SwinTransformerBlock):
                     continue
-                if hasattr(block, 'attn') and isinstance(block.attn, ShiftedWindowAttention):
+                if hasattr(block, "attn") and isinstance(block.attn, ShiftedWindowAttention):
                     handle = block.attn.register_forward_hook(fp_hook)
                     hooks.append(handle)
 
@@ -69,7 +69,7 @@ class Swin_T(TransformerBaseModel):
             bs, p, h, w = attn_map.shape
             map = attn_map.view(1, p, h, w)
             map_resized = torch.nn.functional.interpolate(map, size=(
-                max_h, max_w), mode='bilinear', align_corners=False)
+                max_h, max_w), mode="bilinear", align_corners=False)
             if p < max_p:
                 padding = (0, 0, 0, 0, 0, max_p - p)
                 map_resized = torch.nn.functional.pad(map_resized, padding)

@@ -85,21 +85,8 @@ def style_transfer(
         optimizer = Adam([target], lr=learning_rate)
 
     def loss_step():
-        target_features = model.get_features(
-            target, layers=[model.content_layer] + model.style_layers
-        )
-        content_loss = torch.mean(
-            (target_features[model.content_layer] -
-             content_features[model.content_layer]) ** 2
-        )
-        if isinstance(model, CNNBaseModel):
-            style_loss = model.calc_style_loss(
-                target_features, style_features, target.device)
-        elif isinstance(model, TransformerBaseModel):
-            style_loss = model.calc_style_loss(target)
-        else:
-            raise AssertionError("Invalid model.")
-        total_loss = content_weight * content_loss + style_weight * style_loss
+        total_loss = model.forward(
+            target, content_features, style_features, content_weight, style_weight)
         total_loss.backward(retain_graph=model.retain_graph)
         return total_loss
 
@@ -116,7 +103,8 @@ def style_transfer(
             raise AssertionError("Invalid optimizer.")
 
         if step % 10 == 0 and isinstance(step_range, tqdm):
-            step_range.set_postfix({'total_loss': total_loss.item()})
+            step_range.set_postfix(  # type: ignore
+                {'total_loss': total_loss.item()})
 
     tensor = target.clone().cpu().detach()
     if return_type == "pil":
