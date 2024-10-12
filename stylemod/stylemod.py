@@ -6,6 +6,7 @@ from stylemod.core.transformer import TransformerBaseModel
 from stylemod.models import Model
 from stylemod import utils
 from torch.optim.adam import Adam
+from torch.optim.lbfgs import LBFGS
 from PIL import Image
 from typing import Union, Optional, Literal
 
@@ -20,6 +21,7 @@ def style_transfer(
     content_weight: float = 1e4,
     style_weight: float = 1e2,
     learning_rate: float = 0.003,
+    optimizer_type: Literal["adam", "lbfgs"] = "adam",
     return_type: Literal["tensor", "pil"] = "tensor"
 ) -> Union[torch.Tensor, Image.Image]:
     if isinstance(model, Model):
@@ -73,21 +75,18 @@ def style_transfer(
         content, layers=[content_layer])
     style_features = model_instance.get_features(style, layers=style_layers)
 
-    content_loss = torch.mean(
-        (content_features[content_layer] -
-         content_features[content_layer]) ** 2
-    )
-
     target = content.clone().requires_grad_(True).to(device)
-    optimizer = Adam([target], lr=learning_rate)
 
     # precompute style loss if transformer model
     if isinstance(model_instance, TransformerBaseModel):
         model_instance.precompute_style_attention(style)
 
-    for step in range(steps):
-        optimizer.zero_grad()
+    if optimizer_type == "lbfgs":
+        optimizer = LBFGS([target], max_iter=steps, lr=learning_rate)
+    elif optimizer_type == "adam":
+        optimizer = Adam([target], lr=learning_rate)
 
+    def train():
         target_features = model_instance.get_features(
             target, layers=[content_layer] + style_layers
         )
@@ -106,7 +105,18 @@ def style_transfer(
 
         total_loss = content_weight * content_loss + style_weight * style_loss
         total_loss.backward(retain_graph=model_instance.retain_graph)
-        optimizer.step()
+
+        return total_loss
+
+    for step in range(steps):
+
+        total_loss = torch.zeros(0)
+        if isinstance(optimizer, Adam):
+            optimizer.zero_grad()
+            total_loss = train()
+            optimizer.step()
+        elif isinstance(optimizer, LBFGS):
+            total_loss = optimizer.step(train)
 
         if step % 10 == 0:
             print(f"Step {step}, total loss: {total_loss.item()}")
@@ -117,9 +127,7 @@ def style_transfer(
     if return_type == "pil":
 
         if model_instance.normalization is not None:
-            mean, std = model_instance.normalization
-            for t, m, s in zip(output_tensor, mean, std):
-                t.mul_(s).add_(m)
+            output_tensor = model_instance.denormalize_tensor(output_tensor)
 
         # permutation: [channels, height, width] -> [height, width, channels]
         output_tensor = output_tensor.clamp(0, 1).squeeze()
