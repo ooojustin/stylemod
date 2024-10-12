@@ -6,12 +6,12 @@ from typing import NamedTuple, Dict
 
 
 class StyleType(NamedTuple):
-    background: str
     node_fill: str
     node_border: str
     node_font: str
     edge_color: str
     font: str
+    background: str = "transparent"
     rankdir: str = "TB"
     splines: str = "true"
     custom: Dict[str, str] = {}
@@ -19,7 +19,7 @@ class StyleType(NamedTuple):
 
 class Style(Enum):
     MOLOKAI = StyleType(
-        background="#1B1D1E",
+        # background="#1B1D1E",
         node_fill="#272822",
         node_border="#66D9EF",
         node_font="#F8F8F2",
@@ -120,3 +120,9 @@ class Graphviz:
                 arrowhead="open",
                 fontname=style.font,
                 fontsize="10")
+
+
+def noviz(cls):
+    """Decorator to flag classes that should be excluded from graph visualization."""
+    cls._noviz = True
+    return cls

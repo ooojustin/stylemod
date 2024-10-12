@@ -1,1 +1,1 @@
-from stylemod.stylemod import style_transfer
+from stylemod.stylemod import style_transfer, generate_class_hierarchy

@@ -52,7 +52,7 @@ def run(
 
 @click.command()
 @click.option("--save", "-s", is_flag=True, help="Save the rendered class hierarchy to a file.")
-@click.option("--show-funcs", "-f", is_flag=True, help="Show abstract functions that should be implemented by superclasses of base classes.")
+@click.option("--show-funcs", "-f", is_flag=True, help="Show abstract functions that should be implemented by subclasses of base classes.")
 @click.option("--dpi", "-d", default=200, help="Set the DPI (dots per inch) for the rendered image. [Default: 200]")
 def class_hierarchy(save: bool, show_funcs: bool, dpi: int):
     Graphviz.install()

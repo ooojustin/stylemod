@@ -37,7 +37,7 @@ def style_transfer(
         model = model
     else:
         raise TypeError(
-            f"Unsupported model type: {type(model)}. Must be either a `Model` enum or a superclass of `BaseModel`.")
+            f"Unsupported model type: {type(model)}. Must be either a `Model` enum or a subclass of `BaseModel`.")
 
     device = utils.get_device(gpu_index, _print=_print)
     model.set_device(device)
@@ -91,12 +91,17 @@ def style_transfer(
 
     def loss_step():
         total_loss = model.forward(
-            target, content_features, style_features, content_weight, style_weight)
+            target=target,
+            content_features=content_features,
+            style_features=style_features,
+            content_weight=content_weight,
+            style_weight=style_weight
+        )
         total_loss.backward(retain_graph=model.retain_graph)
         return total_loss
 
     step_range = tqdm(
-        range(steps), desc="Loss Calculation") if _print else range(steps)
+        range(steps), desc="Loss Optimization") if _print else range(steps)
     for step in step_range:
         if isinstance(optimizer, Adam):
             optimizer.zero_grad()
@@ -109,7 +114,7 @@ def style_transfer(
 
         if step % 10 == 0 and isinstance(step_range, tqdm):
             step_range.set_postfix(  # type: ignore
-                {'total_loss': total_loss.item()})
+                {"total_loss": total_loss.item()})
 
     tensor = target.clone().cpu().detach()
     if return_type == "pil":
@@ -140,7 +145,7 @@ def generate_class_hierarchy(show_funcs: bool = False) -> Digraph:
 
     # generic abstractions
     if show_funcs:
-        dg.node("A", label=(
+        dg.node("ABM", label=(
             f'''<
             <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
             <tr>
@@ -160,8 +165,8 @@ def generate_class_hierarchy(show_funcs: bool = False) -> Digraph:
             </table>>'''
         ), shape="plaintext")
     else:
-        dg.node("A", "AbstractBaseModel")
-    dg.node("B", "BaseModel")
+        dg.node("ABM", "AbstractBaseModel")
+    dg.node("BM", "BaseModel")
 
     cnn_models = []
     transformer_models = []
@@ -171,6 +176,8 @@ def generate_class_hierarchy(show_funcs: bool = False) -> Digraph:
     for _, module_name, _ in pkgutil.iter_modules(importlib.import_module(pkg).__path__):
         module = importlib.import_module(f"{pkg}.{module_name}")
         for name, obj in inspect.getmembers(module, inspect.isclass):
+            if getattr(obj, '_noviz', False):
+                continue
             if issubclass(obj, CNNBaseModel) and obj not in [BaseModel, CNNBaseModel]:
                 cnn_models.append(name)
             elif issubclass(obj, TransformerBaseModel) and obj not in [BaseModel, TransformerBaseModel]:
@@ -179,11 +186,11 @@ def generate_class_hierarchy(show_funcs: bool = False) -> Digraph:
     # subgraph for cnn based models
     with dg.subgraph(name="cluster_CNN") as cnn:  # type: ignore
         cnn.attr(label="CNN Models", color=sg_color_1, fontcolor=sg_font_color)
-        cnn.node("C", "CNNBaseModel")
+        cnn.node("CBM", "CNNBaseModel")
 
         for model_name in cnn_models:
             cnn.node(model_name, model_name)
-            cnn.edge("C", model_name)
+            cnn.edge("CBM", model_name)
 
     # subgraph for transformer based models
     with dg.subgraph(name="cluster_Transformer") as transformer:  # type: ignore
@@ -191,7 +198,7 @@ def generate_class_hierarchy(show_funcs: bool = False) -> Digraph:
                          color=sg_color_2, fontcolor=sg_font_color)
 
         if show_funcs:
-            transformer.node("D", label=(
+            transformer.node("TBM", label=(
                 f'''<
                 <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
                 <tr>
@@ -202,15 +209,15 @@ def generate_class_hierarchy(show_funcs: bool = False) -> Digraph:
                 </table>>'''
             ), shape="plaintext")
         else:
-            transformer.node("D", "TransformerBaseModel")
+            transformer.node("TBM", "TransformerBaseModel")
 
         for model_name in transformer_models:
             transformer.node(model_name, model_name)
-            transformer.edge("D", model_name)
+            transformer.edge("TBM", model_name)
 
     # connect high level nodes
-    dg.edge("A", "B")  # AbstractBaseModel -> BaseModel
-    dg.edge("B", "C")  # BaseModel -> CNNBaseModel
-    dg.edge("B", "D")  # BaseModel -> TransformerBaseModel
+    dg.edge("ABM", "BM")  # AbstractBaseModel -> BaseModel
+    dg.edge("BM", "CBM")  # BaseModel -> CNNBaseModel
+    dg.edge("BM", "TBM")  # BaseModel -> TransformerBaseModel
 
     return dg
