@@ -160,7 +160,11 @@ cython_debug/
 #.idea/
 
 # Directory to store images for easy access via CLI during development process
-img/
+img/*
+!img/class_hierarchy.png
 
 # Default output image path
 output_image.png
+
+# Class hierarchy visualization
+# class_hierarchy.png

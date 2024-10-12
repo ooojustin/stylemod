@@ -1,6 +1,11 @@
+import os
+import io
 import click
-from stylemod import style_transfer
+import stylemod
+import stylemod.core.factory as _
+from stylemod.core.gv import Graphviz
 from stylemod.models import Model
+from typing import Optional
 from PIL import Image
 
 
@@ -21,10 +26,18 @@ class CaseInsensitiveChoice(click.Choice):
 @click.option("--max-size", default=400, help="Maximum size of input images. [Default: 400]")
 @click.option("--model", type=CaseInsensitiveChoice([model.name for model in Model]), default="VGG19", help="Model to use for feature extraction. [Default: VGG19]")
 @click.option("--gpu-index", default=None, type=int, help="GPU index to use. [Default: 0, if available]")
-def run(content_image, style_image, output_image, steps, max_size, model, gpu_index):
+def run(
+    content_image: str,
+    style_image: str,
+    output_image: str,
+    steps: int,
+    max_size: int,
+    model: str,
+    gpu_index: Optional[int]
+) -> None:
     model_enum = Model[model]
     print("Model:", model_enum.name)
-    output = style_transfer(
+    output = stylemod.style_transfer(
         content_image=content_image,
         style_image=style_image,
         steps=steps,
@@ -35,3 +48,37 @@ def run(content_image, style_image, output_image, steps, max_size, model, gpu_in
     )
     assert isinstance(output, Image.Image)
     output.save(output_image)
+
+
+@click.command()
+@click.option("--save", "-s", is_flag=True, help="Save the rendered class hierarchy to a file.")
+@click.option("--show-funcs", "-f", is_flag=True, help="Show abstract functions that should be implemented by superclasses of base classes.")
+@click.option("--dpi", "-d", default=200, help="Set the DPI (dots per inch) for the rendered image. [Default: 200]")
+def class_hierarchy(save: bool, show_funcs: bool, dpi: int):
+    Graphviz.install()
+
+    img_dir = "img"
+    if save and not os.path.exists(img_dir):
+        os.makedirs(img_dir)
+
+    dg = stylemod.generate_class_hierarchy(show_funcs=show_funcs)
+    dg.attr(dpi=str(dpi))
+    png = dg.pipe(format="png")
+
+    if save:
+        path = os.path.join(img_dir, "class_hierarchy.png")
+        with open(path, "wb") as f:
+            f.write(png)
+        click.echo(f"Class hierarchy saved as '{path}'.")
+
+    image = Image.open(io.BytesIO(png))
+    image.show()
+
+
+@click.group()
+def cli():
+    pass
+
+
+cli.add_command(run)
+cli.add_command(class_hierarchy)

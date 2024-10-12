@@ -1,7 +1,7 @@
 import torch
+from stylemod.core.gv import Graphviz, Style
 from stylemod.core.factory import ModelFactory
 from stylemod.core.base import BaseModel
-from stylemod.core.cnn import CNNBaseModel
 from stylemod.core.transformer import TransformerBaseModel
 from stylemod.models import Model
 from stylemod import utils
@@ -10,6 +10,7 @@ from typing import Union, Optional, Literal
 from torch.optim.adam import Adam
 from torch.optim.lbfgs import LBFGS
 from PIL import Image
+from graphviz import Digraph
 
 
 def style_transfer(
@@ -116,3 +117,99 @@ def style_transfer(
         return pil
     else:
         return tensor
+
+
+def generate_class_hierarchy(show_funcs: bool = False) -> Digraph:
+    dg = Digraph(comment="Class Hierarchy")
+
+    color_scheme = Style.MOLOKAI.value
+    tr_font_size = color_scheme.custom.get(
+        "tr_font_size", "8")
+    sg_color_1 = color_scheme.custom.get(
+        "soft_blue", "darkgray")
+    sg_color_2 = color_scheme.custom.get(
+        "slate_gray", "gray")
+    sg_font_color = color_scheme.custom.get(
+        "white", "white")
+
+    Graphviz.stylize(dg, style=color_scheme)
+
+    # generic abstractions
+    if show_funcs:
+        dg.node("A", label=(
+            f'''<
+            <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr>
+                <td>AbstractBaseModel</td>
+            </tr>
+            <tr><td align="center"><font point-size="{tr_font_size}">initialize_module()</font></td></tr>
+            <tr><td align="center"><font point-size="{tr_font_size}">get_model_module()</font></td></tr>
+            <tr><td align="center"><font point-size="{tr_font_size}">eval()</font></td></tr>
+            <tr><td align="center"><font point-size="{tr_font_size}">set_device()</font></td></tr>
+            <tr><td align="center"><font point-size="{tr_font_size}">normalize_tensor()</font></td></tr>
+            <tr><td align="center"><font point-size="{tr_font_size}">denormalize_tensor()</font></td></tr>
+            <tr><td align="center"><font point-size="{tr_font_size}">get_features()</font></td></tr>
+            <tr><td align="center"><font point-size="{tr_font_size}">calc_gram_matrix()</font></td></tr>
+            <tr><td align="center"><font point-size="{tr_font_size}">calc_content_loss()</font></td></tr>
+            <tr><td align="center"><font point-size="{tr_font_size}">calc_style_loss()</font></td></tr>
+            <tr><td align="center"><font point-size="{tr_font_size}">forward()</font></td></tr>
+            </table>>'''
+        ), shape="plaintext")
+    else:
+        dg.node("A", "AbstractBaseModel")
+    dg.node("B", "BaseModel")
+
+    # subgraph for cnn based models
+    with dg.subgraph(name="cluster_CNN") as cnn:  # type: ignore
+        cnn.attr(label="CNN Models", color=sg_color_1, fontcolor=sg_font_color)
+
+        # cnn model nodes
+        cnn.node("C", "CNNBaseModel")
+        cnn.node("E", "ConvNeXt_Tiny")
+        cnn.node("F", "DenseNet121")
+        cnn.node("G", "EfficientNetB0")
+        cnn.node("H", "EfficientNetV2")
+        cnn.node("I", "RegNet_Y_16GF")
+        cnn.node("J", "ResNet50")
+        cnn.node("L", "VGG19")
+
+        # connect cnn models to CNNBaseModel
+        cnn.edge("C", "E")
+        cnn.edge("C", "F")
+        cnn.edge("C", "G")
+        cnn.edge("C", "H")
+        cnn.edge("C", "I")
+        cnn.edge("C", "J")
+        cnn.edge("C", "L")
+
+    # subgraph for transformer-based models
+    with dg.subgraph(name="cluster_Transformer") as transformer:  # type: ignore
+        transformer.attr(label="Transformer Models",
+                         color=sg_color_2, fontcolor=sg_font_color)
+        if show_funcs:
+            transformer.node("D", label=(
+                f'''<
+                <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+                <tr>
+                    <td>TransformerBaseModel</td>
+                </tr>
+                <tr><td align="center"><font point-size="{tr_font_size}">get_attention()</font></td></tr>
+                <tr><td align="center"><font point-size="{tr_font_size}">compute_style_attention()</font></td></tr>
+                </table>>'''
+            ), shape="plaintext")
+        else:
+            transformer.node("D", "TransformerBaseModel")
+
+        transformer.node("K", "Swin_T")
+        transformer.node("M", "ViT_B_16")
+
+        # connect transformer models to TransformerBaseModel
+        transformer.edge("D", "K")
+        transformer.edge("D", "M")
+
+    # edges for hierarchy connections
+    dg.edge("A", "B")  # AbstractBaseModel -> BaseModel
+    dg.edge("B", "C")  # BaseModel -> CNNBaseModel
+    dg.edge("B", "D")  # BaseModel -> TransformerBaseModel
+
+    return dg

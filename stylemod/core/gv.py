@@ -5,28 +5,32 @@ from graphviz import Digraph
 from typing import NamedTuple, Dict
 
 
-class ColorSchemeType(NamedTuple):
+class StyleType(NamedTuple):
     background: str
     node_fill: str
     node_border: str
     node_font: str
     edge_color: str
     font: str
+    rankdir: str = "TB"
+    splines: str = "true"
     custom: Dict[str, str] = {}
 
 
-class ColorScheme(Enum):
-    MOLOKAI = ColorSchemeType(
+class Style(Enum):
+    MOLOKAI = StyleType(
         background="#1B1D1E",
         node_fill="#272822",
         node_border="#66D9EF",
         node_font="#F8F8F2",
         edge_color="#A6E22E",
         font="Tahoma",
+        splines="ortho",
         custom={
-            "muted_cyan": "#5588AA",
+            "tr_font_size": "8",
             "soft_blue": "#3A3D43",
-            "slate_gray": "#708090"
+            "slate_gray": "#708090",
+            "white": "#F0F0F0"
         }
     )
 
@@ -91,27 +95,28 @@ class Graphviz:
                     "Please manually install Graphviz using your system's package manager.")
 
     @staticmethod
-    def stylize(dg: Digraph, colors: ColorSchemeType = ColorScheme.MOLOKAI.value):
-        dg.attr(rankdir="TB",
+    def stylize(dg: Digraph, style: StyleType = Style.MOLOKAI.value):
+        dg.attr(rankdir=style.rankdir,
                 size="10",
-                fontname=colors.font,
+                fontname=style.font,
                 fontsize="12",
                 style="filled",
-                bgcolor=colors.background,
-                color=colors.node_font)
+                bgcolor=style.background,
+                color=style.node_font,
+                splines=style.splines)
 
         dg.attr("node",
                 shape="box",
                 style="filled",
-                fillcolor=colors.node_fill,
-                fontname=colors.font,
+                fillcolor=style.node_fill,
+                fontname=style.font,
                 fontsize="10",
-                color=colors.node_border,
-                fontcolor=colors.node_font)
+                color=style.node_border,
+                fontcolor=style.node_font)
 
         dg.attr("edge",
-                color=colors.edge_color,
+                color=style.edge_color,
                 style="solid",
                 arrowhead="open",
-                fontname=colors.font,
+                fontname=style.font,
                 fontsize="10")
