@@ -4,7 +4,6 @@ from typing import Callable, Dict, Optional
 
 
 class CNNBaseModel(BaseModel):
-    """Base class for CNN models."""
 
     def __init__(
         self,
@@ -28,17 +27,16 @@ class CNNBaseModel(BaseModel):
             retain_graph=retain_graph
         )
 
-    def get_style_loss(
+    def calc_style_loss(
         self,
         target_features: Dict[str, torch.Tensor],
         style_features: Dict[str, torch.Tensor],
         device: Optional[torch.device] = None
     ) -> torch.Tensor:
-        """Calculate style loss using Gram matrices for CNN models."""
-        style_loss = torch.tensor(0.0, device=device)
+        loss = torch.tensor(0.0, device=device)
         for layer in self.style_layers:
-            style_gram = self.gram_matrix(style_features[layer])
-            target_gram = self.gram_matrix(target_features[layer])
-            style_loss += self.style_weights[layer] * \
-                torch.mean((target_gram - style_gram) ** 2)
-        return style_loss
+            style_gm = self.calc_gram_matrix(style_features[layer])
+            target_gm = self.calc_gram_matrix(target_features[layer])
+            loss += self.style_weights[layer] * \
+                torch.mean((style_gm - target_gm) ** 2)
+        return loss

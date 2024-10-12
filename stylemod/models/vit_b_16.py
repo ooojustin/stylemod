@@ -2,6 +2,8 @@ import torch
 from stylemod.core.transformer import TransformerBaseModel
 from torchvision.models import vit_b_16, ViT_B_16_Weights
 from torch.nn import MultiheadAttention
+from torch.utils.hooks import RemovableHandle
+from typing import List
 
 
 class ViT_B_16(TransformerBaseModel):
@@ -28,39 +30,34 @@ class ViT_B_16(TransformerBaseModel):
         features = {}
         model = self.get_model_module()
         x = model._process_input(image)
-
         for i, block in enumerate(model.encoder.layers):
             x = block(x)
             if str(i) in layers:
                 features[str(i)] = x
-
         return features
 
-    def extract_attention(self, image: torch.Tensor) -> torch.Tensor:
+    def get_attention(self, image: torch.Tensor) -> torch.Tensor:
+        # it's all you need
         model = self.get_model_module()
-        attention_maps = []
+        maps: List[torch.Tensor] = []
 
-        def hook(module, input, _):
-            # manually compute attention weights
-            query, key, _ = input
-            attn_weights = torch.matmul(
-                query, key.transpose(-2, -1)) / (module.head_dim ** 0.5)
-            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
-            attention_maps.append(attn_weights)
+        def fp_hook(module, input, _):
+            q, k, _ = input
+            weights = torch.matmul(
+                q, k.transpose(-2, -1)) / (module.head_dim ** 0.5)
+            weights = torch.nn.functional.softmax(weights, dim=-1)
+            maps.append(weights)
 
-        # register hooks on MultiheadAttention layers
-        hooks = []
+        hooks: List[RemovableHandle] = []
         for _, layer in enumerate(model.encoder.layers):
             for submodule in layer.modules():
                 if not isinstance(submodule, MultiheadAttention):
                     continue
-                hook_handle = submodule.register_forward_hook(hook)
-                hooks.append(hook_handle)
+                handle = submodule.register_forward_hook(fp_hook)
+                hooks.append(handle)
 
-        # forward pass through the model to trigger hooks, and then remove them
         _ = model(image)
-        for hook_handle in hooks:
-            hook_handle.remove()
+        for handle in hooks:
+            handle.remove()
 
-        # stack attention maps into a tensor
-        return torch.stack(attention_maps)
+        return torch.stack(maps)

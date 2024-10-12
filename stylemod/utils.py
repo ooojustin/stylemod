@@ -2,6 +2,7 @@ import torch
 import torchvision.transforms as transforms
 from PIL import Image
 from typing import Optional
+import platform
 
 
 def list_available_gpus():
@@ -12,17 +13,20 @@ def list_available_gpus():
             print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
 
 
-def get_device(gpu_index=None):
+def get_device(gpu_index: Optional[int] = None, _print: bool = False):
     if torch.cuda.is_available():
         if gpu_index is not None and torch.cuda.device_count() > gpu_index:
-            print(
-                f"Using GPU {gpu_index}: {torch.cuda.get_device_name(gpu_index)}")
+            if _print:
+                print(
+                    f"Device: GPU {gpu_index} [{torch.cuda.get_device_name(gpu_index)}]")
             return torch.device(f"cuda:{gpu_index}")
         else:
-            print(f"Using GPU 0: {torch.cuda.get_device_name(0)}")
+            if _print:
+                print(f"Device: GPU 0 [{torch.cuda.get_device_name(0)}]")
             return torch.device("cuda")
     else:
-        print("Using CPU")
+        if _print:
+            print(f"Device: CPU [{platform.processor()}]")
         return torch.device("cpu")
 
 
@@ -32,20 +36,15 @@ def load_image(
     shape: Optional[tuple] = None
 ) -> torch.Tensor:
     image = Image.open(path)
-
     if shape is not None:
-        # resize the image to the provided shape
         image = image.resize(shape)
     elif max_size is not None:
-        # resize while perserving aspect ratio
-        original_width, original_height = image.size
-        largest_dim = max(original_width, original_height)
-        if largest_dim > max_size:
-            scale_factor = max_size / largest_dim
-            new_width = int(original_width * scale_factor)
-            new_height = int(original_height * scale_factor)
-            image = image.resize((new_width, new_height))
-
+        w, h = image.size
+        larger_dim = max(w, h)
+        if larger_dim > max_size:
+            scale = max_size / larger_dim
+            w, h = int(w * scale), int(h * scale)
+            image = image.resize((w, h))
     transform = transforms.ToTensor()
     image_tensor = transform(image).unsqueeze(0)
     return image_tensor

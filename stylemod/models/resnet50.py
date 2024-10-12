@@ -1,6 +1,7 @@
 import torch
 from stylemod.core.cnn import CNNBaseModel
 from torchvision.models import resnet50, ResNet50_Weights
+from typing import Dict
 
 
 class ResNet50(CNNBaseModel):
@@ -24,18 +25,15 @@ class ResNet50(CNNBaseModel):
         )
 
     def get_features(self, image: torch.Tensor, layers: list) -> dict:
-        features = {}
-        x = image
+        features: Dict[str, torch.Tensor] = {}
         model = self.get_model_module()
-
+        x = image
         for name, layer in model._modules.items():
             assert layer
             x = layer(x)
             if name in layers:
                 features[name] = x
-
-            # NOTE(justin): stop forward pass before reaching the fully connected layer (avgpool is right before fc)
+            # stop before fc layer
             if name == 'avgpool':
                 break
-
         return features

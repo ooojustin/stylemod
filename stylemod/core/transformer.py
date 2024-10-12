@@ -5,7 +5,6 @@ from typing import Callable, Dict, Optional
 
 
 class TransformerBaseModel(BaseModel):
-    """Base class for Transformer models."""
 
     # NOTE(justin): Transformers generally perform worse than CNNs on NST tasks.
     # Need to do more research. StyTr2 is an interesting model/paper to refer to: https://arxiv.org/abs/2105.14576
@@ -30,26 +29,24 @@ class TransformerBaseModel(BaseModel):
             eval_mode=eval_mode,
             retain_graph=retain_graph
         )
-        self.style_attention_maps = None
+        self.style_attention = None
 
     @abstractmethod
-    def extract_attention(self, image: torch.Tensor) -> torch.Tensor:
-        """Extract attention maps from the transformer."""
+    def get_attention(self, image: torch.Tensor) -> torch.Tensor:
         pass
 
-    def get_style_loss(self, target: torch.Tensor) -> torch.Tensor:
-        """Calculate style loss using attention maps for Transformer models."""
-        assert self.style_attention_maps is not None, "Style attention maps must be precomputed. (model.precompute_style_attention)"
-        target_attention = self.extract_attention(target)
-        style_loss = torch.tensor(0.0, device=target.device)
+    def calc_style_loss(self, target: torch.Tensor) -> torch.Tensor:
+        assert self.style_attention is not None, "Style attention maps must be precomputed. (call model.compute_style_attention())"
+        target_attention = self.get_attention(target)
+        loss = torch.tensor(0.0, device=target.device)
         for layer in self.style_layers:
-            target_gram = self.gram_matrix(target_attention[int(layer)])
-            style_gram = self.gram_matrix(
-                self.style_attention_maps[int(layer)])
-            style_loss += self.style_weights[layer] * \
-                torch.mean((target_gram - style_gram) ** 2)
-        return style_loss
+            target_gm = self.calc_gram_matrix(target_attention[int(layer)])
+            style_gm = self.calc_gram_matrix(
+                self.style_attention[int(layer)])
+            loss += self.style_weights[layer] * \
+                torch.mean((target_gm - style_gm) ** 2)
+        return loss
 
-    def precompute_style_attention(self, style_image: torch.Tensor):
-        """Precompute and store attention maps for the style image."""
-        self.style_attention_maps = self.extract_attention(style_image)
+    def compute_style_attention(self, style_image: torch.Tensor) -> torch.Tensor:
+        self.style_attention = self.get_attention(style_image)
+        return self.style_attention
