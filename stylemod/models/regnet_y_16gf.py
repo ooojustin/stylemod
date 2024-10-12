@@ -1,11 +1,11 @@
 import torch
 import torchvision
-from stylemod.core.base_model import BaseModel
+from stylemod.core.cnn import CNNBaseModel
 from typing import Dict, List
 from torchvision.models import regnet_y_16gf, RegNet_Y_16GF_Weights
 
 
-class RegNet_Y_16GF(BaseModel):
+class RegNet_Y_16GF(CNNBaseModel):
 
     def __init__(self):
         super().__init__(

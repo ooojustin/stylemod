@@ -1,54 +1,11 @@
 import torch
 import torchvision.transforms as transforms
-from abc import ABC, abstractmethod
+from stylemod.core.abstract import AbstractBaseModel
 from typing import Callable, Dict, List, Tuple, Optional
+
 
 NormalizationType = Tuple[Tuple[float, float, float],
                           Tuple[float, float, float]]
-
-
-class AbstractBaseModel(ABC):
-    """Abstract base class for all models."""
-
-    @abstractmethod
-    def initialize_module(self) -> None:
-        """Initialize the torch.nn.Module ('model' attribute) from the model_fn."""
-        pass
-
-    @abstractmethod
-    def get_features(self, image: torch.Tensor, layers: List[str]) -> Dict[str, torch.Tensor]:
-        """Extract features from the image based on the specified layers."""
-        pass
-
-    @abstractmethod
-    def set_device(self, device: torch.device) -> torch.nn.Module:
-        """Set the device for the model (CPU or GPU)."""
-        pass
-
-    @abstractmethod
-    def eval(self) -> torch.nn.Module:
-        """Set the model to evaluation mode."""
-        pass
-
-    @abstractmethod
-    def get_model_module(self) -> torch.nn.Module:
-        """Return the underlying model module."""
-        pass
-
-    @abstractmethod
-    def gram_matrix(self, tensor: torch.Tensor) -> torch.Tensor:
-        """Calculate the gram matrix for the tensor."""
-        pass
-
-    @abstractmethod
-    def normalize_tensor(self, tensor: torch.Tensor) -> torch.Tensor:
-        """Normalize a given tensor using the model-specific normalization values."""
-        pass
-
-    @abstractmethod
-    def denormalize_tensor(self, tensor: torch.Tensor) -> torch.Tensor:
-        """Denormalize a given tensor by reversing the model-specific normalization values."""
-        pass
 
 
 class BaseModel(AbstractBaseModel):
@@ -124,11 +81,18 @@ class BaseModel(AbstractBaseModel):
         return features
 
     def gram_matrix(self, tensor: torch.Tensor) -> torch.Tensor:
-        """Calculate the gram matrix for the input tensor."""
-        _, d, h, w = tensor.size()
-        tensor = tensor.view(d, h * w)
-        gram = torch.mm(tensor, tensor.t())
-        # gram /= h * w  # TODO(justin): make gram matrix normalization optional
+        """Calculate the Gram matrix for CNN and Transformer models."""
+        if tensor.dim() == 4:  # CNN: (batch_size, channels, height, width)
+            b, d, h, w = tensor.size()
+            tensor = tensor.view(b * d, h * w)
+            gram = torch.mm(tensor, tensor.t())
+        elif tensor.dim() == 3:  # Transformer: (batch_size, seq_len, embedding_dim)
+            b, seq_len, emb_dim = tensor.size()
+            tensor = tensor.view(b, seq_len, emb_dim)
+            gram = torch.bmm(tensor, tensor.transpose(1, 2))
+        else:
+            raise ValueError(
+                "Default gram_matrix implementation only supports either 3 dimensions ([batch_size, seq_len, embedding_dim] - CNNs) or 4 dimensions ([batch_size, seq_len, embedding_dim] - Transformers).")
         return gram
 
     def normalize_tensor(self, tensor: torch.Tensor) -> torch.Tensor:

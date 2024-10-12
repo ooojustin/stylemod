@@ -1,8 +1,8 @@
-from stylemod.core.base_model import BaseModel
+from stylemod.core.cnn import CNNBaseModel
 from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 
 
-class EfficientNetB0(BaseModel):
+class EfficientNetB0(CNNBaseModel):
 
     def __init__(self):
         super().__init__(

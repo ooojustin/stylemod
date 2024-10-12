@@ -2,7 +2,9 @@ import importlib
 import pkgutil
 import inspect
 from stylemod.models import Model
-from stylemod.core.base_model import BaseModel
+from stylemod.core.base import BaseModel
+from stylemod.core.cnn import CNNBaseModel
+from stylemod.core.transformer import TransformerBaseModel
 from typing import Dict, Callable, Type, Union
 
 
@@ -44,7 +46,7 @@ class ModelFactory:
 
             # inspect the module for classes that inherit from BaseModel
             for name, obj in inspect.getmembers(module, inspect.isclass):
-                if issubclass(obj, BaseModel) and obj != BaseModel:
+                if issubclass(obj, BaseModel) and obj not in [BaseModel, CNNBaseModel, TransformerBaseModel]:
 
                     model_enum_name = None
                     for enum_model in Model:

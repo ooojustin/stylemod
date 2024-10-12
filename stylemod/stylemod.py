@@ -1,6 +1,8 @@
 import torch
 from stylemod.core.factory import ModelFactory
-from stylemod.core.base_model import BaseModel
+from stylemod.core.base import BaseModel
+from stylemod.core.cnn import CNNBaseModel
+from stylemod.core.transformer import TransformerBaseModel
 from stylemod.models import Model
 from stylemod import utils
 from torch.optim.adam import Adam
@@ -35,7 +37,6 @@ def style_transfer(
 
     content_layer = model_instance.content_layer
     style_layers = model_instance.style_layers
-    style_weights = model_instance.style_weights
 
     if isinstance(content_image, str):
         content = utils.load_image(
@@ -73,31 +74,37 @@ def style_transfer(
     style_features = model_instance.get_features(style, layers=style_layers)
 
     content_loss = torch.mean(
-        (content_features[content_layer] - content_features[content_layer]) ** 2)
-    style_grams = {layer: model_instance.gram_matrix(
-        style_features[layer]) for layer in style_features}
+        (content_features[content_layer] -
+         content_features[content_layer]) ** 2
+    )
 
     target = content.clone().requires_grad_(True).to(device)
-
     optimizer = Adam([target], lr=learning_rate)
 
+    # precompute style loss if transformer model
+    if isinstance(model_instance, TransformerBaseModel):
+        model_instance.precompute_style_attention(style)
+
     for step in range(steps):
+        optimizer.zero_grad()
+
         target_features = model_instance.get_features(
-            target, layers=[content_layer] + list(style_layers))
+            target, layers=[content_layer] + style_layers
+        )
 
         content_loss = torch.mean(
-            (target_features[content_layer] - content_features[content_layer]) ** 2)
+            (target_features[content_layer] -
+             content_features[content_layer]) ** 2
+        )
 
         style_loss = 0
-        for layer in style_layers:
-            target_gram = model_instance.gram_matrix(target_features[layer])
-            style_gram = style_grams[layer]
-            style_loss += style_weights[layer] * \
-                torch.mean((target_gram - style_gram) ** 2)
+        if isinstance(model_instance, CNNBaseModel):
+            style_loss = model_instance.get_style_loss(
+                target_features, style_features, target.device)
+        elif isinstance(model_instance, TransformerBaseModel):
+            style_loss = model_instance.get_style_loss(target)
 
         total_loss = content_weight * content_loss + style_weight * style_loss
-
-        optimizer.zero_grad()
         total_loss.backward(retain_graph=model_instance.retain_graph)
         optimizer.step()
 

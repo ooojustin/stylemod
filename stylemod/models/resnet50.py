@@ -1,9 +1,9 @@
 import torch
-from stylemod.core.base_model import BaseModel
+from stylemod.core.cnn import CNNBaseModel
 from torchvision.models import resnet50, ResNet50_Weights
 
 
-class ResNet50(BaseModel):
+class ResNet50(CNNBaseModel):
 
     def __init__(self):
         super().__init__(

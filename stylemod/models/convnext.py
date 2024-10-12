@@ -1,8 +1,8 @@
-from stylemod.core.base_model import BaseModel
+from stylemod.core.cnn import CNNBaseModel
 from torchvision.models import convnext_tiny, ConvNeXt_Tiny_Weights
 
 
-class ConvNeXt_Tiny(BaseModel):
+class ConvNeXt_Tiny(CNNBaseModel):
 
     def __init__(self):
         super().__init__(

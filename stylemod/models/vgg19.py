@@ -1,8 +1,8 @@
-from stylemod.core.base_model import BaseModel
+from stylemod.core.cnn import CNNBaseModel
 from torchvision.models import vgg19, VGG19_Weights
 
 
-class VGG19(BaseModel):
+class VGG19(CNNBaseModel):
 
     def __init__(self):
         super().__init__(

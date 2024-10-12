@@ -1,8 +1,8 @@
-from stylemod.core.base_model import BaseModel
+from stylemod.core.cnn import CNNBaseModel
 from torchvision.models import densenet121, DenseNet121_Weights
 
 
-class DenseNet121(BaseModel):
+class DenseNet121(CNNBaseModel):
 
     def __init__(self):
         super().__init__(
