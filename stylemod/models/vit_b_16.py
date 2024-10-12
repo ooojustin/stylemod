@@ -1,9 +1,10 @@
 import torch
-from stylemod.core.base_model import BaseModel
+from stylemod.core.transformer import TransformerBaseModel
 from torchvision.models import vit_b_16, ViT_B_16_Weights
+from torch.nn import MultiheadAttention
 
 
-class ViT_B_16(BaseModel):
+class ViT_B_16(TransformerBaseModel):
 
     def __init__(self):
         super().__init__(
@@ -24,7 +25,6 @@ class ViT_B_16(BaseModel):
         )
 
     def get_features(self, image, layers):
-        """Extract features from transformer blocks in the Vision Transformer."""
         features = {}
         model = self.get_model_module()
         x = model._process_input(image)
@@ -36,15 +36,31 @@ class ViT_B_16(BaseModel):
 
         return features
 
-    def gram_matrix(self, tensor):
-        """Calculate the gram matrix for ViT layers, handling both 3D and 4D tensors."""
-        # NOTE(justin): CNNs are 4D tensors, ViTs are 3D tensors
-        if tensor.dim() == 4:  # CNN (batch_size, channels, height, width)
-            batch_size, d, h, w = tensor.size()
-            tensor = tensor.view(batch_size, d, h * w)
-        elif tensor.dim() == 3:  # ViT (batch_size, seq_length, hidden_dim)
-            batch_size, seq_length, hidden_dim = tensor.size()
-            tensor = tensor.view(batch_size, seq_length, hidden_dim)
+    def extract_attention(self, image: torch.Tensor) -> torch.Tensor:
+        model = self.get_model_module()
+        attention_maps = []
 
-        gram = torch.bmm(tensor, tensor.transpose(1, 2))
-        return gram
+        def hook(module, input, _):
+            # manually compute attention weights
+            query, key, _ = input
+            attn_weights = torch.matmul(
+                query, key.transpose(-2, -1)) / (module.head_dim ** 0.5)
+            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
+            attention_maps.append(attn_weights)
+
+        # register hooks on MultiheadAttention layers
+        hooks = []
+        for _, layer in enumerate(model.encoder.layers):
+            for submodule in layer.modules():
+                if not isinstance(submodule, MultiheadAttention):
+                    continue
+                hook_handle = submodule.register_forward_hook(hook)
+                hooks.append(hook_handle)
+
+        # forward pass through the model to trigger hooks, and then remove them
+        _ = model(image)
+        for hook_handle in hooks:
+            hook_handle.remove()
+
+        # stack attention maps into a tensor
+        return torch.stack(attention_maps)

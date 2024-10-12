@@ -7,6 +7,8 @@ from typing import Callable, Dict, Optional
 class TransformerBaseModel(BaseModel):
     """Base class for Transformer models."""
 
+    # NOTE(justin): Transformers generally perform worse than CNNs on NST tasks.
+    # Need to do more research. StyTr2 is an interesting model/paper to refer to: https://arxiv.org/abs/2105.14576
     def __init__(
         self,
         model_fn: Callable[..., torch.nn.Module],
