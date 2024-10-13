@@ -133,6 +133,8 @@ def generate_class_hierarchy(show_funcs: bool = False) -> Digraph:
     dg = Digraph(comment=title, graph_attr={"size": "3.25!"})
 
     color_scheme = Style.MOLOKAI.value
+    Graphviz.stylize(dg, style=color_scheme)
+
     tr_font_size = color_scheme.custom.get(
         "tr_font_size", "8")
     sg_color_1 = color_scheme.custom.get(
@@ -158,8 +160,6 @@ def generate_class_hierarchy(show_funcs: bool = False) -> Digraph:
         width="6.0" if show_funcs else "2.25",
         fixedsize="true",
     )
-
-    Graphviz.stylize(dg, style=color_scheme)
 
     # generic abstractions
     if show_funcs:

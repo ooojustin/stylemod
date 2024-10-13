@@ -52,7 +52,7 @@ def run(
 
 @click.command()
 @click.option("--save", "-s", is_flag=True, help="Save the rendered class hierarchy to a file.")
-@click.option("--show-funcs", "-f", is_flag=True, help="Show abstract functions that should be implemented by subclasses of base classes.")
+@click.option("--show-funcs", "-f", is_flag=True, help="Show abstract functions that should be implemented by this nodes subclasses.")
 @click.option("--dpi", "-d", default=200, help="Set the DPI (dots per inch) for the rendered image. [Default: 200]")
 def class_hierarchy(save: bool, show_funcs: bool, dpi: int):
     Graphviz.install()
@@ -66,12 +66,14 @@ def class_hierarchy(save: bool, show_funcs: bool, dpi: int):
     png = dg.pipe(format="png")
 
     if save:
-        path = os.path.join(img_dir, "class_hierarchy.png")
-        with open(path, "wb") as f:
+        png_path = os.path.join(img_dir, "class_hierarchy.png")
+        dot_path = "stylemod.dot"
+        with open(png_path, "wb") as f:
             f.write(png)
         with open("stylemod.dot", "w") as f:
             f.write(dg.source)
-        click.echo(f"Class hierarchy saved as '{path}'.")
+        click.echo(
+            f"Class hierarchy visualization saved as '{png_path}', dot file saved as '{dot_path}'.")
 
     image = Image.open(io.BytesIO(png))
     image.show()

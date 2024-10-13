@@ -105,6 +105,7 @@ class Graphviz:
 
     @staticmethod
     def stylize(dg: Digraph, style: StyleType = Style.MOLOKAI.value):
+        # graph attributes
         dg.attr(rankdir=style.rankdir,
                 size="10",
                 fontname=style.font,
@@ -114,6 +115,7 @@ class Graphviz:
                 color=style.node_font,
                 splines=style.splines)
 
+        # node attributes
         dg.attr("node",
                 shape="box",
                 style="filled",
@@ -123,6 +125,7 @@ class Graphviz:
                 color=style.node_border,
                 fontcolor=style.node_font)
 
+        # edge attributes
         dg.attr("edge",
                 color=style.edge_color,
                 style="solid",

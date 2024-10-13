@@ -1,10 +1,10 @@
 // stylemod
 digraph {
 	graph [size="3.25!"]
-	title [label=<<font face="Fira Code, Segoe UI, Helvetica, Arial" point-size="20" color="#F0F0F0"><b>stylemod</b></font>> color="#AE81FF" fillcolor="#272822" fixedsize=true shape=box style=filled width=6.0]
 	bgcolor=transparent color="#F8F8F2" fontname="Fira Code, Segoe UI, Helvetica, Arial" fontsize=16 rankdir=TB size=10 splines=ortho style=filled
 	node [color="#66D9EF" fillcolor="#272822" fontcolor="#F8F8F2" fontname="Fira Code, Segoe UI, Helvetica, Arial" fontsize=12 shape=box style=filled]
 	edge [arrowhead=open color="#A6E22E" fontname="Fira Code, Segoe UI, Helvetica, Arial" fontsize=12 style=solid]
+	title [label=<<font face="Fira Code, Segoe UI, Helvetica, Arial" point-size="20" color="#F0F0F0"><b>stylemod</b></font>> color="#AE81FF" fillcolor="#272822" fixedsize=true shape=box style=filled width=6.0]
 	ABM [label=<
             <table border="0" cellborder="1" cellspacing="0" cellpadding="8" width="400">
             <tr>
