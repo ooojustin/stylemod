@@ -1,6 +1,6 @@
 import torch
-from stylemod.core.gv import noviz
 from stylemod.core.transformer import TransformerBaseModel
+from stylemod.visualization.gv import noviz
 from torchvision.models import vit_b_16, ViT_B_16_Weights
 from torch.utils.hooks import RemovableHandle
 from torch.nn import MultiheadAttention

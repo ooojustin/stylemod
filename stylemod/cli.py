@@ -3,7 +3,8 @@ import io
 import click
 import stylemod
 import stylemod.core.factory as _
-from stylemod.core.gv import Graphviz
+from stylemod.visualization import architecture
+from stylemod.visualization.gv import Graphviz
 from stylemod.models import Model
 from typing import Optional
 from PIL import Image
@@ -61,7 +62,7 @@ def class_hierarchy(save: bool, show_funcs: bool, dpi: int):
     if save and not os.path.exists(img_dir):
         os.makedirs(img_dir)
 
-    dg = stylemod.generate_class_hierarchy(show_funcs=show_funcs)
+    dg = architecture.visualize(show_funcs=show_funcs)
     dg.attr(dpi=str(dpi))
     png = dg.pipe(format="png")
 
