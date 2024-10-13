@@ -60,7 +60,7 @@ class BaseModel(AbstractBaseModel):
     def normalize_tensor(self, tensor: torch.Tensor) -> torch.Tensor:
         if not self.normalization:
             warnings.warn(
-                "Called 'normalize_tensor' with empty normalization attribute. Returning unchanged tensor.", UserWarning)
+                "Called 'normalize_tensor' with empty 'normalization attribute'. Returning unchanged tensor.", UserWarning)
             return tensor
         mean, std = self.normalization
         normalizer = transforms.Normalize(mean=mean, std=std)
