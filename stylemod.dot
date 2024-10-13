@@ -31,7 +31,8 @@ digraph {
             <td align="center" width="200"><font point-size="10">calc_style_loss()</font></td>
             </tr>
             <tr>
-            <td align="center" colspan="2" width="400"><font point-size="10">forward()</font></td>
+            <td align="center" width="200"><font point-size="10">forward()</font></td>
+            <td align="center" width="200"><font point-size="10">visualize()</font></td>
             </tr>
             </table>> shape=plaintext]
 	BM [label=<<font face="Fira Code Medium, Segoe UI Semibold, Helvetica Neue Medium, Arial Semibold">BaseModel</font>>]
@@ -67,7 +68,7 @@ digraph {
 		ViT_B_16 [label=ViT_B_16]
 		TBM -> ViT_B_16
 	}
-	ABM -> BM
+	ABM -> BM [style=dashed]
 	BM -> CBM
 	BM -> TBM
 	dpi=200

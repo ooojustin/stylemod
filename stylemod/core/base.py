@@ -1,4 +1,5 @@
 import torch
+import graphviz
 import warnings
 import torchvision.transforms as transforms
 from stylemod.core.abstract import AbstractBaseModel
@@ -102,3 +103,7 @@ class BaseModel(AbstractBaseModel):
             raise ValueError(
                 "Default calc_gram_matrix implementation only supports either 3 dimensions (CNNs: [batch_size, seq_len, embedding_dim]) or 4 dimensions (Transformers: [batch_size, seq_len, embedding_dim] ).")
         return gm
+
+    def visualize(self) -> graphviz.Digraph:
+        from stylemod.visualization.module import visualize
+        return visualize(self)

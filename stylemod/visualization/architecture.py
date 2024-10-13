@@ -71,7 +71,8 @@ def visualize(show_funcs: bool = False) -> Digraph:
             <td align="center" width="{td_width}"><font point-size="{tr_font_size}">calc_style_loss()</font></td>
             </tr>
             <tr>
-            <td align="center" colspan="2" width="{td_width * 2}"><font point-size="{tr_font_size}">forward()</font></td>
+            <td align="center" width="{td_width}"><font point-size="{tr_font_size}">forward()</font></td>
+            <td align="center" width="{td_width}"><font point-size="{tr_font_size}">visualize()</font></td>
             </tr>
             </table>>'''
         ), shape="plaintext")
@@ -132,7 +133,7 @@ def visualize(show_funcs: bool = False) -> Digraph:
             transformer.edge("TBM", model_name)
 
     # connect high level nodes
-    dg.edge("ABM", "BM")  # AbstractBaseModel -> BaseModel
+    dg.edge("ABM", "BM", style="dashed")  # AbstractBaseModel -> BaseModel
     dg.edge("BM", "CBM")  # BaseModel -> CNNBaseModel
     dg.edge("BM", "TBM")  # BaseModel -> TransformerBaseModel
 

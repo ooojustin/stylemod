@@ -1,4 +1,5 @@
 import torch
+import graphviz
 from abc import ABC, abstractmethod
 from typing import Dict, List
 
@@ -51,3 +52,7 @@ class AbstractBaseModel(ABC):
     @abstractmethod
     def forward(self, target: torch.Tensor, content_features: Dict[str, torch.Tensor], style_features: Dict[str, torch.Tensor], content_weight: float, style_weight: float) -> torch.Tensor:
         raise NotImplementedError("Method not implemented: 'forward'")
+
+    @abstractmethod
+    def visualize(self) -> graphviz.Digraph:
+        raise NotImplementedError("Method not implemented: 'visualize'")
