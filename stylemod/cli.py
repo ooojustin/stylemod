@@ -69,6 +69,8 @@ def class_hierarchy(save: bool, show_funcs: bool, dpi: int):
         path = os.path.join(img_dir, "class_hierarchy.png")
         with open(path, "wb") as f:
             f.write(png)
+        with open("stylemod.dot", "w") as f:
+            f.write(dg.source)
         click.echo(f"Class hierarchy saved as '{path}'.")
 
     image = Image.open(io.BytesIO(png))

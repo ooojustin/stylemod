@@ -1,0 +1,74 @@
+// stylemod
+digraph {
+	graph [size="3.25!"]
+	title [label=<<font face="Fira Code, Segoe UI, Helvetica, Arial" point-size="20" color="#F0F0F0"><b>stylemod</b></font>> color="#AE81FF" fillcolor="#272822" fixedsize=true shape=box style=filled width=6.0]
+	bgcolor=transparent color="#F8F8F2" fontname="Fira Code, Segoe UI, Helvetica, Arial" fontsize=16 rankdir=TB size=10 splines=ortho style=filled
+	node [color="#66D9EF" fillcolor="#272822" fontcolor="#F8F8F2" fontname="Fira Code, Segoe UI, Helvetica, Arial" fontsize=12 shape=box style=filled]
+	edge [arrowhead=open color="#A6E22E" fontname="Fira Code, Segoe UI, Helvetica, Arial" fontsize=12 style=solid]
+	ABM [label=<
+            <table border="0" cellborder="1" cellspacing="0" cellpadding="8" width="400">
+            <tr>
+            <td colspan="2" align="center" width="400" style="dotted"><font face="Fira Code Medium, Segoe UI Semibold, Helvetica Neue Medium, Arial Semibold">AbstractBaseModel</font></td>
+            </tr>
+            <tr>
+            <td align="center" width="200"><font point-size="10">initialize_module()</font></td>
+            <td align="center" width="200"><font point-size="10">get_model_module()</font></td>
+            </tr>
+            <tr>
+            <td align="center" width="200"><font point-size="10">eval()</font></td>
+            <td align="center" width="200"><font point-size="10">set_device()</font></td>
+            </tr>
+            <tr>
+            <td align="center" width="200"><font point-size="10">normalize_tensor()</font></td>
+            <td align="center" width="200"><font point-size="10">denormalize_tensor()</font></td>
+            </tr>
+            <tr>
+            <td align="center" width="200"><font point-size="10">get_features()</font></td>
+            <td align="center" width="200"><font point-size="10">calc_gram_matrix()</font></td>
+            </tr>
+            <tr>
+            <td align="center" width="200"><font point-size="10">calc_content_loss()</font></td>
+            <td align="center" width="200"><font point-size="10">calc_style_loss()</font></td>
+            </tr>
+            <tr>
+            <td align="center" colspan="2" width="400"><font point-size="10">forward()</font></td>
+            </tr>
+            </table>> shape=plaintext]
+	BM [label=<<font face="Fira Code Medium, Segoe UI Semibold, Helvetica Neue Medium, Arial Semibold">BaseModel</font>>]
+	title -> ABM [style=invis]
+	subgraph cluster_CNN {
+		color="#3A3D43" fontcolor="#F0F0F0" label=<<b>CNN Models</b>>
+		CBM [label=<<font face="Fira Code Medium, Segoe UI Semibold, Helvetica Neue Medium, Arial Semibold">CNNBaseModel</font>>]
+		ConvNeXt_Tiny [label=ConvNeXt_Tiny]
+		CBM -> ConvNeXt_Tiny
+		DenseNet121 [label=DenseNet121]
+		CBM -> DenseNet121
+		EfficientNetB0 [label=EfficientNetB0]
+		CBM -> EfficientNetB0
+		EfficientNetV2 [label=EfficientNetV2]
+		CBM -> EfficientNetV2
+		RegNet_Y_16GF [label=RegNet_Y_16GF]
+		CBM -> RegNet_Y_16GF
+		ResNet50 [label=ResNet50]
+		CBM -> ResNet50
+		VGG19 [label=VGG19]
+		CBM -> VGG19
+	}
+	subgraph cluster_Transformer {
+		color="#708090" fontcolor="#F0F0F0" label=<<b>Transformer Models</b>>
+		TBM [label=<
+                <table border="0" cellborder="1" cellspacing="0" cellpadding="8">
+                <tr><td><font face="Fira Code Medium, Segoe UI Semibold, Helvetica Neue Medium, Arial Semibold">TransformerBaseModel</font></td></tr>
+                <tr><td align="center"><font point-size="10">get_attention()</font></td></tr>
+                <tr><td align="center"><font point-size="10">compute_style_attention()</font></td></tr>
+                </table>> shape=plaintext]
+		Swin_T [label=Swin_T]
+		TBM -> Swin_T
+		ViT_B_16 [label=ViT_B_16]
+		TBM -> ViT_B_16
+	}
+	ABM -> BM
+	BM -> CBM
+	BM -> TBM
+	dpi=200
+}
