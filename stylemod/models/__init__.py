@@ -8,6 +8,7 @@ from stylemod.models.convnext import ConvNeXt_Tiny
 from stylemod.models.swin_t import Swin_T
 from stylemod.models.densenet121 import DenseNet121
 from stylemod.models.regnet_y_16gf import RegNet_Y_16GF
+from stylemod.models.vit_b_16_sh import ViT_B_16_Sinkhorn
 
 
 class Model(Enum):
@@ -15,6 +16,7 @@ class Model(Enum):
     EFFICIENTNET_B0 = EfficientNetB0
     EFFICIENTNET_V2 = EfficientNetV2
     VIT_B_16 = ViT_B_16
+    VIT_B_16_SH = ViT_B_16_Sinkhorn
     RESNET50 = ResNet50
     CONVNEXT_TINY = ConvNeXt_Tiny
     SWIN_T = Swin_T

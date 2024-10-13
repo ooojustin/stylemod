@@ -4,4 +4,5 @@ pillow
 matplotlib
 click
 tqdm
+pot
 graphviz
