@@ -4,6 +4,10 @@ from typing import Callable, Dict, Optional
 
 
 class CNNBaseModel(BaseModel):
+    """
+    Extends BaseModel to implement content and style loss calculations specific to CNN architectures.
+    It handles feature extraction and gram matrix computations for style transfer tasks.
+    """
 
     def __init__(
         self,

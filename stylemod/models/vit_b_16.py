@@ -8,22 +8,31 @@ from typing import List
 
 class ViT_B_16(TransformerBaseModel):
 
-    def __init__(self):
+    def __init__(
+        self,
+        model_fn=vit_b_16,
+        weights=ViT_B_16_Weights.DEFAULT,
+        content_layer="5",
+        style_weights={
+            "1": 1.0,
+            "3": 0.8,
+            "5": 0.6,
+            "7": 0.4,
+            "9": 0.2
+        },
+        normalization=((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        eval_mode=False,
+        retain_graph=False
+    ):
         super().__init__(
-            model_fn=vit_b_16,
-            weights=ViT_B_16_Weights.DEFAULT,
             name="ViT_B_16",
-            content_layer="5",
-            style_weights={
-                "1": 1.0,
-                "3": 0.8,
-                "5": 0.6,
-                "7": 0.4,
-                "9": 0.2
-            },
-            normalization=((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-            eval_mode=False,
-            retain_graph=False
+            model_fn=model_fn,
+            weights=weights,
+            content_layer=content_layer,
+            style_weights=style_weights,
+            normalization=normalization,
+            eval_mode=eval_mode,
+            retain_graph=retain_graph
         )
 
     def get_features(self, image, layers):

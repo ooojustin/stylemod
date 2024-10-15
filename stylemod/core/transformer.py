@@ -5,6 +5,11 @@ from typing import Callable, Dict, Optional
 
 
 class TransformerBaseModel(BaseModel):
+    """
+    Eextends BaseModel to implement style transfer using transformers. 
+    It introduces attention based style loss calculations and requires computation of attention maps for style transfer tasks.
+    Requires an implementation of get_attention() due to the variance in attention mechanisms across transformers.
+    """
 
     # NOTE(justin): Transformers generally perform worse than CNNs on NST tasks.
     # Need to do more research. StyTr2 is an interesting model/paper to refer to: https://arxiv.org/abs/2105.14576

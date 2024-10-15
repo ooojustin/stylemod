@@ -8,22 +8,31 @@ from typing import List
 
 class Swin_T(TransformerBaseModel):
 
-    def __init__(self):
+    def __init__(
+        self,
+        model_fn=swin_t,
+        weights=Swin_T_Weights.DEFAULT,
+        content_layer="4",
+        style_weights={
+            "0": 1.0,
+            "1": 0.8,
+            "2": 0.6,
+            "3": 0.4,
+            "4": 0.2
+        },
+        normalization=((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        eval_mode=False,
+        retain_graph=False
+    ):
         super().__init__(
-            model_fn=swin_t,
-            weights=Swin_T_Weights.DEFAULT,
             name="Swin_T",
-            content_layer="4",
-            style_weights={
-                "0": 1.0,
-                "1": 0.8,
-                "2": 0.6,
-                "3": 0.4,
-                "4": 0.2
-            },
-            normalization=((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-            eval_mode=False,
-            retain_graph=False
+            model_fn=model_fn,
+            weights=weights,
+            content_layer=content_layer,
+            style_weights=style_weights,
+            normalization=normalization,
+            eval_mode=eval_mode,
+            retain_graph=retain_graph
         )
 
     def get_attention(self, image: torch.Tensor) -> torch.Tensor:

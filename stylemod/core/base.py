@@ -2,15 +2,15 @@ import torch
 import graphviz
 import warnings
 import torchvision.transforms as transforms
-from stylemod.core.abstract import AbstractBaseModel
-from typing import Callable, Dict, List, Tuple, Optional
-
-
-NormalizationType = Tuple[Tuple[float, float, float],
-                          Tuple[float, float, float]]
+from stylemod.core.abstract import AbstractBaseModel, NormalizationType
+from typing import Callable, Dict, List, Optional
 
 
 class BaseModel(AbstractBaseModel):
+    """
+    Provides common functionality like initialization and normalization, 
+    reducing repetitive code. Subclasses extend it to focus on model-specific logic.
+    """
 
     def __init__(
         self,
