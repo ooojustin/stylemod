@@ -1,6 +1,6 @@
 import torch
 from stylemod.core.factory import ModelFactory
-from stylemod.core.base import BaseModel
+from stylemod.core.base import AbstractBaseModel
 from stylemod.core.transformer import TransformerBaseModel
 from stylemod.models import Model
 from stylemod import utils
@@ -14,7 +14,7 @@ from PIL import Image
 def style_transfer(
     content_image: Union[str, torch.Tensor],
     style_image: Union[str, torch.Tensor],
-    model: Union[Model, BaseModel] = Model.VGG19,
+    model: Union[Model, AbstractBaseModel] = Model.VGG19,
     max_size: Optional[int] = None,
     steps: int = 1000,
     gpu_index: Optional[int] = None,
@@ -27,7 +27,7 @@ def style_transfer(
 ) -> Union[torch.Tensor, Image.Image]:
     if isinstance(model, Model):
         model = ModelFactory.create(model.name)
-    elif isinstance(model, BaseModel):
+    elif isinstance(model, AbstractBaseModel):
         model = model
     else:
         raise TypeError(

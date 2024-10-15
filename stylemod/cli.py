@@ -2,7 +2,7 @@ import os
 import io
 import click
 import stylemod
-import stylemod.core.factory as _
+from stylemod.core.factory import ModelFactory
 from stylemod.visualization import architecture
 from stylemod.visualization.gv import Graphviz
 from stylemod.models import Model
@@ -62,9 +62,9 @@ def class_hierarchy(save: bool, show_funcs: bool, dpi: int):
     if save and not os.path.exists(img_dir):
         os.makedirs(img_dir)
 
-    dg = architecture.visualize(show_funcs=show_funcs)
-    dg.attr(dpi=str(dpi))
-    png = dg.pipe(format="png")
+    dot = architecture.visualize(show_funcs=show_funcs)
+    dot.attr(dpi=str(dpi))
+    png = dot.pipe(format="png")
 
     if save:
         png_path = os.path.join(img_dir, "class_hierarchy.png")
@@ -72,12 +72,38 @@ def class_hierarchy(save: bool, show_funcs: bool, dpi: int):
         with open(png_path, "wb") as f:
             f.write(png)
         with open("stylemod.dot", "w") as f:
-            f.write(dg.source)
+            f.write(dot.source)
         click.echo(
             f"Class hierarchy visualization saved as '{png_path}', dot file saved as '{dot_path}'.")
 
     image = Image.open(io.BytesIO(png))
     image.show()
+
+
+@click.command()
+@click.argument("model", type=CaseInsensitiveChoice([model.name for model in Model]))
+@click.option("--output", default=None, help="Optional path to save the visualization image (e.g., 'model_vis.png'). If not provided, it will just display.")
+@click.option("--dpi", "-d", default=400, help="Set the DPI (dots per inch) for the rendered image. [Default: 400]")
+def visualize(model: str, output: Optional[str], dpi: int) -> None:
+    """
+    Visualizes the architecture of a given model.
+    If the output is provided, saves the visualization as an image file.
+    Otherwise, it displays the model graph.
+    """
+    model_enum = Model[model]
+    model_instance = ModelFactory.create(model_enum.name)
+
+    dot = model_instance.visualize()
+    dot.attr(dpi=str(dpi))
+
+    if output:
+        output_format = output.split(".")[-1]
+        dot.render(output, format=output_format, cleanup=True)
+        click.echo(f"Model visualization saved to '{output}'.")
+    else:
+        png_data = dot.pipe(format="png")
+        image = Image.open(io.BytesIO(png_data))
+        image.show()
 
 
 @click.group()
@@ -87,3 +113,4 @@ def cli():
 
 cli.add_command(run)
 cli.add_command(class_hierarchy)
+cli.add_command(visualize)
