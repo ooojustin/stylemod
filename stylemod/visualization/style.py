@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import NamedTuple, Dict
+from typing import NamedTuple, Dict, Any
 
 
 class StyleType(NamedTuple):
@@ -14,7 +14,7 @@ class StyleType(NamedTuple):
     background: str = "transparent"
     rankdir: str = "TB"
     splines: str = "true"
-    custom: Dict[str, str] = {}
+    custom: Dict[str, Any] = {}
 
 
 class Style(Enum):
@@ -30,12 +30,38 @@ class Style(Enum):
         font_sz_edge="12",
         splines="ortho",
         custom={
-            "semibold_font": "Fira Code Medium, Segoe UI Semibold, Helvetica Neue Medium, Arial Semibold",
             "title_font_size": "20",
+            "title_color": "#AE81FF",
+            "semibold_font": "Fira Code Medium, Segoe UI Semibold, Helvetica Neue Medium, Arial Semibold",
             "tr_font_size": "10",
-            "purple": "#AE81FF",
-            "soft_blue": "#3A3D43",
-            "slate_gray": "#708090",
-            "white": "#F0F0F0"
+            "sg_font_color": "#F0F0F0",
+            "subgraph_colors": ["#3A3D43", "#708090"],
+            "layer_kwargs": {
+                "conv2d": {
+                    "shape": "box",
+                    "color": "lightblue",
+                    "style": "filled"
+                },
+                "relu": {
+                    "shape": "ellipse",
+                    "color": "lightgreen",
+                    "style": "filled"
+                },
+                "maxpool2d": {
+                    "shape": "diamond",
+                    "color": "orange",
+                    "style": "filled"
+                },
+                "linear": {
+                    "shape": "hexagon",
+                    "color": "yellow",
+                    "style": "filled"
+                },
+                "other": {
+                    "shape": "rect",
+                    "color": "gray",
+                    "style": "filled"
+                }
+            }
         }
     )

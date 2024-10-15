@@ -8,35 +8,34 @@ from stylemod.visualization.gv import Graphviz, Style
 from graphviz import Digraph
 
 
-def visualize(show_funcs: bool = False) -> Digraph:
+def visualize(show_funcs: bool = False, style=Style.MOLOKAI.value) -> Digraph:
     title = "stylemod"
     dg = Digraph(comment=title, graph_attr={"size": "3.25!"})
 
-    color_scheme = Style.MOLOKAI.value
-    Graphviz.stylize(dg, style=color_scheme)
+    style = Style.MOLOKAI.value
+    Graphviz.stylize(dg, style=style)
 
-    tr_font_size = color_scheme.custom.get(
+    tr_font_size = style.custom.get(
         "tr_font_size", "8")
-    sg_color_1 = color_scheme.custom.get(
-        "soft_blue", "darkgray")
-    sg_color_2 = color_scheme.custom.get(
-        "slate_gray", "gray")
-    sg_font_color = color_scheme.custom.get(
-        "white", "white")
-    semibold_font = color_scheme.custom.get(
-        "semibold_font", color_scheme.font)
-    title_font_size = color_scheme.custom.get(
+    subgraph_colors = style.custom.get("subgraph_colors", [])
+    sg_color_1 = subgraph_colors[0] if len(subgraph_colors) > 0 else "darkgray"
+    sg_color_2 = subgraph_colors[1] if len(subgraph_colors) > 1 else "gray"
+    sg_font_color = style.custom.get(
+        "sg_font_color", "white")
+    semibold_font = style.custom.get(
+        "semibold_font", style.font)
+    title_font_size = style.custom.get(
         "title_font_size", "24")
-    purple = color_scheme.custom.get(
-        "purple", "purple")
+    title_color = style.custom.get(
+        "title_color", "purple")
 
     dg.node(
         "title",
-        label=f'''<<font face="{color_scheme.font}" point-size="{title_font_size}" color="{sg_font_color}"><b>{title}</b></font>>''',
+        label=f'''<<font face="{style.font}" point-size="{title_font_size}" color="{sg_font_color}"><b>{title}</b></font>>''',
         shape="box",
         style="filled",
-        color=purple,
-        fillcolor=color_scheme.node_fill,
+        color=title_color,
+        fillcolor=style.node_fill,
         width="6.0" if show_funcs else "2.25",
         fixedsize="true",
     )
