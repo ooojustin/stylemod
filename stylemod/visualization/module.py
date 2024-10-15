@@ -1,9 +1,7 @@
-import io
 import torch
 import graphviz
 from stylemod.core.base import BaseModel
 from stylemod.visualization.gv import Graphviz, Style
-from PIL import Image
 
 
 def visualize(model: BaseModel, style=Style.MOLOKAI.value) -> graphviz.Digraph:
@@ -52,13 +50,5 @@ def visualize(model: BaseModel, style=Style.MOLOKAI.value) -> graphviz.Digraph:
             prev_layer_name = layer_name
 
     add_layer_to_graph(model.model)
-
-    dot.attr(dpi="900")
-    png = dot.pipe(format="png")
-    image = Image.open(io.BytesIO(png))
-    image.show()
-
-    with open("visual.png", "wb") as f:
-        f.write(png)
 
     return dot
