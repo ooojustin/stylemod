@@ -1,9 +1,8 @@
-import pkgutil
-import importlib
-import inspect
+from stylemod.core.abstract import AbstractBaseModel
 from stylemod.core.base import BaseModel
 from stylemod.core.cnn import CNNBaseModel
 from stylemod.core.transformer import TransformerBaseModel
+from stylemod.core.factory import ModelFactory
 from stylemod.visualization.gv import Graphviz, Style
 from graphviz import Digraph
 
@@ -86,16 +85,19 @@ def visualize(show_funcs: bool = False, style=Style.MOLOKAI.value) -> Digraph:
     # populate lists of cnn/transformer models for subgraphs
     cnn_models = []
     transformer_models = []
-    pkg = "stylemod.models"
-    for _, module_name, _ in pkgutil.iter_modules(importlib.import_module(pkg).__path__):
-        module = importlib.import_module(f"{pkg}.{module_name}")
-        for name, obj in inspect.getmembers(module, inspect.isclass):
-            if getattr(obj, '_noviz', False):
-                continue
-            if issubclass(obj, CNNBaseModel) and obj not in [BaseModel, CNNBaseModel]:
-                cnn_models.append(name)
-            elif issubclass(obj, TransformerBaseModel) and obj not in [BaseModel, TransformerBaseModel]:
-                transformer_models.append(name)
+    for obj in ModelFactory.get_models():
+        if getattr(obj, '_noviz', False):
+            continue
+        if (
+            issubclass(obj, CNNBaseModel) and  # type: ignore
+            obj not in [AbstractBaseModel, BaseModel, CNNBaseModel]
+        ):
+            cnn_models.append(obj.__name__)
+        elif (
+            issubclass(obj, TransformerBaseModel) and  # type: ignore
+            obj not in [AbstractBaseModel, BaseModel, TransformerBaseModel]
+        ):
+            transformer_models.append(obj.__name__)
 
     # subgraph for cnn based models
     with dg.subgraph(name="cluster_CNN") as cnn:  # type: ignore

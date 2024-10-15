@@ -41,6 +41,10 @@ class ModelFactory:
         ModelFactory._models[model_name] = model_class
 
     @staticmethod
+    def get_models():
+        return ModelFactory._models.values()
+
+    @staticmethod
     def _register_models():
         pkg = "stylemod.models"
         for _, module_name, _ in pkgutil.iter_modules(importlib.import_module(pkg).__path__):
