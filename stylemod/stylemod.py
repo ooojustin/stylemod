@@ -18,9 +18,6 @@ def style_transfer(
     max_size: Optional[int] = None,
     steps: int = 1000,
     gpu_index: Optional[int] = None,
-    content_weight: float = 1e4,
-    style_weight: float = 1e2,
-    learning_rate: float = 0.003,
     optimizer_type: Literal["adam", "lbfgs"] = "adam",
     return_type: Literal["tensor", "pil"] = "tensor",
     _print: bool = True
@@ -37,6 +34,8 @@ def style_transfer(
     model.set_device(device)
     if model.eval_mode:
         model.eval()
+
+    model.visualize()
 
     if isinstance(content_image, str):
         content = utils.load_image(
@@ -79,17 +78,17 @@ def style_transfer(
     target = content.clone().requires_grad_(True).to(device)
 
     if optimizer_type == "lbfgs":
-        optimizer = LBFGS([target], max_iter=steps, lr=learning_rate)
+        optimizer = LBFGS([target], max_iter=steps, lr=model.learning_rate)
     elif optimizer_type == "adam":
-        optimizer = Adam([target], lr=learning_rate)
+        optimizer = Adam([target], lr=model.learning_rate)
 
     def loss_step():
         total_loss = model.forward(
             target=target,
             content_features=content_features,
             style_features=style_features,
-            content_weight=content_weight,
-            style_weight=style_weight
+            content_weight=model.content_weight,
+            style_weight=model.style_weight
         )
         total_loss.backward(retain_graph=model.retain_graph)
         return total_loss

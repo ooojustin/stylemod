@@ -18,7 +18,10 @@ class BaseModel(AbstractBaseModel):
         weights=None,
         name: str = "",
         content_layer: str = "",
-        style_weights: Dict[str, float] = {},
+        style_weights: Dict[str, float] = {},  # per layer
+        content_weight: float = 1e4,
+        style_weight: float = 1e2,
+        learning_rate: float = 0.003,
         normalization: Optional[NormalizationType] = None,
         eval_mode: bool = False,
         retain_graph: bool = False
@@ -30,6 +33,9 @@ class BaseModel(AbstractBaseModel):
         self.content_layer = content_layer
         self.style_layers = list(style_weights.keys())
         self.style_weights = style_weights
+        self.content_weight = content_weight
+        self.style_weight = style_weight
+        self.learning_rate = learning_rate
         self.normalization = normalization
         self.eval_mode = eval_mode
         self.retain_graph = retain_graph

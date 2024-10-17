@@ -20,8 +20,11 @@ class AbstractBaseModel(ABC):
     weights = None,
     name: str
     content_layer: str
-    style_layers: List[str]
+    style_layers: List[str]  # list(style_weights.keys())
     style_weights: Dict[str, float]
+    content_weight: float
+    style_weight: float
+    learning_rate: float
     normalization: Optional[NormalizationType]
     eval_mode: bool = False
     retain_graph: bool = False
