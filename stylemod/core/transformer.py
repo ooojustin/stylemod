@@ -60,13 +60,11 @@ class TransformerBaseModel(BaseModel):
         self,
         target: torch.Tensor,
         content_features: Dict[str, torch.Tensor],
-        style_features: Dict[str, torch.Tensor],
-        content_weight: float,
-        style_weight: float
+        style_features: Dict[str, torch.Tensor]
     ) -> torch.Tensor:
         content_loss = self.calc_content_loss(target, content_features)
         style_loss = self.calc_style_loss(target)
-        total_loss = content_weight * content_loss + style_weight * style_loss
+        total_loss = self.content_weight * content_loss + self.style_weight * style_loss
         return total_loss
 
     def compute_style_attention(self, style_image: torch.Tensor) -> torch.Tensor:

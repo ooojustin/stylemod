@@ -70,7 +70,7 @@ class AbstractBaseModel(ABC):
         pass
 
     @abstractmethod
-    def forward(self, target: torch.Tensor, content_features: Dict[str, torch.Tensor], style_features: Dict[str, torch.Tensor], content_weight: float, style_weight: float) -> torch.Tensor:
+    def forward(self, target: torch.Tensor, content_features: Dict[str, torch.Tensor], style_features: Dict[str, torch.Tensor]) -> torch.Tensor:
         pass
 
     @abstractmethod

@@ -162,6 +162,7 @@ cython_debug/
 # Directory to store images for easy access via CLI during development process
 img/*
 !img/class_hierarchy.png
+!img/visualize_vgg19.png
 
 # Default output image path
 output_image.png
