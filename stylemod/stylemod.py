@@ -87,8 +87,6 @@ def style_transfer(
             target=target,
             content_features=content_features,
             style_features=style_features,
-            content_weight=model.content_weight,
-            style_weight=model.style_weight
         )
         total_loss.backward(retain_graph=model.retain_graph)
         return total_loss
