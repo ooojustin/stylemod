@@ -1,5 +1,8 @@
 # stylemod
 
+[![PyPI - Version](https://img.shields.io/pypi/v/stylemod?color=AE81FF)](https://pypi.org/project/stylemod/)
+[![PyPI - License](https://img.shields.io/pypi/l/stylemod)](https://github.com/ooojustin/stylemod/blob/main/LICENSE)
+
 Modular [neural style transfer (NST)](https://en.wikipedia.org/wiki/Neural_style_transfer) library designed to make it easy to integrate and customize different deep learning models for artistic style transfer.
 
 ## Table of Contents
@@ -26,9 +29,20 @@ Modular [neural style transfer (NST)](https://en.wikipedia.org/wiki/Neural_style
 
 Here is a visualization of the class hierarchy for the `stylemod` library:
 
-![Class Hierarchy](./img/class_hierarchy.png)
+![Class Hierarchy](https://github.com/ooojustin/stylemod/blob/main/img/class_hierarchy.png?raw=true)
 
 ## Installation
+
+### Option 1: Install via PyPI (Recommended)
+
+```bash
+pip install stylemod
+```
+
+This will automatically install required dependencies.
+You can also view the package on [PyPI](https://pypi.org/project/stylemod/).
+
+### Option 2: Install from Source (For Development)
 
 1. **Clone the repository**:
 
@@ -44,37 +58,38 @@ Here is a visualization of the class hierarchy for the `stylemod` library:
    pip install -r requirements.txt
    ```
 
-3. **Install Graphviz** (Optional):
-   If you wish to use the built-in Graphviz integration for architecture visualization, ensure Graphviz is installed:
+### Install Graphviz (Optional)
 
-   - **Windows**  
-     You can download Graphviz for Windows from the official website:  
-     [Windows Download](https://graphviz.gitlab.io/_pages/Download/Download_windows.html)
+If you wish to use the built-in Graphviz integration for architecture visualization, ensure Graphviz is installed:
 
-     Alternatively, you can install it using popular package managers:
+- **Windows**  
+  You can download Graphviz for Windows from the official website:  
+  [Windows Download](https://graphviz.gitlab.io/_pages/Download/Download_windows.html)
 
-     ```bash
-     # Using Chocolatey
-     choco install graphviz
+  Alternatively, you can install it using popular package managers:
 
-     # Using Scoop
-     scoop install graphviz
-     ```
+  ```bash
+  # Using Chocolatey
+  choco install graphviz
 
-   - **Unix-based Systems**
+  # Using Scoop
+  scoop install graphviz
+  ```
 
-     ```bash
-     # For Linux (Debian/Ubuntu)
-     sudo apt-get install graphviz
+- **Unix-based Systems**
 
-     # For Linux (Red Hat/CentOS)
-     sudo yum install graphviz
+  ```bash
+  # For Linux (Debian/Ubuntu)
+  sudo apt-get install graphviz
 
-     # For macOS
-     brew install graphviz
-     ```
+  # For Linux (Red Hat/CentOS)
+  sudo yum install graphviz
 
-   > **Note**: If you try to invoke `stylemod.generate_class_hierarchy` without graphviz installed, stylemod will attempt to install it automatically via your package manager on Linux/MacOS.
+  # For macOS
+  brew install graphviz
+  ```
+
+> **Note**: If you try to invoke `stylemod.generate_class_hierarchy()` or `model.visualize()` without graphviz installed, stylemod will attempt to install it automatically via your package manager on Linux/MacOS.
 
 ## Model Superclasses
 
@@ -152,7 +167,7 @@ stylemod also includes a command-line interface to perform style transfer and vi
   - Use the `--output` option to save the visualization as an image file (e.g., `model_vis.png`). If not provided, the visualization will be displayed without saving.
   - You can adjust the DPI of the visualization using the `--dpi` option.
 
-> To see an example of what the output of visualizing VGG19 would look like, see [visualize_vgg19.png](./img/visualize_vgg19.png).
+> To see an example of what the output of visualizing VGG19 would look like, see [visualize_vgg19.png](https://github.com/ooojustin/stylemod/blob/main/img/visualize_vgg19.png).
 
 ## ModelFactory
 
@@ -200,4 +215,4 @@ custom_model = ModelFactory.create("MY_CUSTOM_MODEL", content_layer='conv4_2', s
 
 ## License
 
-stylemod is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+stylemod is licensed under the MIT License. See the [LICENSE](https://github.com/ooojustin/stylemod/blob/main/LICENSE) file for details.
