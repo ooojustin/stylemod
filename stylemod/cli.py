@@ -19,14 +19,14 @@ class CaseInsensitiveChoice(click.Choice):
             f"Invalid choice: {value}. (choose from {', '.join(self.choices)})", param, ctx)
 
 
-@click.command()
-@click.option("--content-image", required=True, help="Path to the content image.")
-@click.option("--style-image", required=True, help="Path to the style image.")
-@click.option("--output-image", default="output_image.png", help="Filename for the output image. [Default: output_image.png]")
-@click.option("--steps", default=1000, help="Number of optimization steps. [Default: 1000]")
-@click.option("--max-size", default=400, help="Maximum size of input images. [Default: 400]")
-@click.option("--model", type=CaseInsensitiveChoice([model.name for model in Model]), default="VGG19", help="Model to use for feature extraction. [Default: VGG19]")
-@click.option("--gpu-index", default=None, type=int, help="GPU index to use. [Default: 0, if available]")
+@click.command(help="Execute neural style transfer.")
+@click.option("--content-image", "-ci", required=True, help="Path to the content image.")
+@click.option("--style-image", "-si", required=True, help="Path to the style image.")
+@click.option("--output-image", "-o", default="output_image.png", help="Filename for the output image. [Default: output_image.png]")
+@click.option("--steps", "-s", default=1000, help="Number of optimization steps. [Default: 1000]")
+@click.option("--max-size", "-ms", default=400, help="Maximum size of input images. [Default: 400]")
+@click.option("--model", "-m", type=CaseInsensitiveChoice([model.name for model in Model]), default="VGG19", help="Model to use for feature extraction. [Default: VGG19]")
+@click.option("--gpu-index", "-gpu", default=None, type=int, help="GPU index to use. [Default: 0, if available]")
 def run(
     content_image: str,
     style_image: str,
@@ -51,7 +51,7 @@ def run(
     output.save(output_image)
 
 
-@click.command()
+@click.command(help="Visualize the class hierarchy of the stylemod project.")
 @click.option("--save", "-s", is_flag=True, help="Save the rendered class hierarchy to a file.")
 @click.option("--show-funcs", "-f", is_flag=True, help="Show abstract functions that should be implemented by this nodes subclasses.")
 @click.option("--dpi", "-d", default=200, help="Set the DPI (dots per inch) for the rendered image. [Default: 200]")
@@ -80,9 +80,9 @@ def class_hierarchy(save: bool, show_funcs: bool, dpi: int):
     image.show()
 
 
-@click.command()
+@click.command(help="Visualizes the architecture of a given model.")
 @click.argument("model", type=CaseInsensitiveChoice([model.name for model in Model]))
-@click.option("--output", default=None, help="Optional path to save the visualization image (e.g., 'model_vis.png'). If not provided, it will just display.")
+@click.option("--output", "-o", default=None, help="Optional path to save the visualization image (e.g., 'model_vis.png'). If not provided, it will just display.")
 @click.option("--dpi", "-d", default=400, help="Set the DPI (dots per inch) for the rendered image. [Default: 400]")
 def visualize(model: str, output: Optional[str], dpi: int) -> None:
     """

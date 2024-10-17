@@ -141,33 +141,57 @@ The `TransformerBaseModel` extends `BaseModel` to support transformer architectu
 
 ## CLI Usage
 
-stylemod also includes a command-line interface to perform style transfer and visualize the projects class hierarchy.
+The `stylemod` library provides a command-line interface (CLI) for running style transfer and visualizing model architectures.
 
-- ### Running Style Transfer from CLI
+### Available Commands
 
-  ```bash
-  python -m stylemod run --content-image "img/content.jpg" --style-image "img/style.jpg" --model VGG19
-  ```
+#### 1. Running Style Transfer
 
-- ### Visualizing Class Hierarchy
+You can run the style transfer directly from the CLI by providing the paths to your content and style images, along with other optional parameters like the output filename, the number of steps, and the model to use.
 
-  ```bash
-  python -m stylemod class-hierarchy --save --show-funcs
-  ```
+```bash
+stylemod run --content-image "content.png" --style-image "style.png" --steps 500 --model VGG19
+```
 
-- ### Visualizing Model Architecture
+##### Options:
 
-  To visualize the architecture of a specific model:
+- `-ci, --content-image`: **(Required)** Path to the content image.
+- `-si, --style-image`: **(Required)** Path to the style image.
+- `-o, --output-image`: Filename for the output image. _(Default: `output_image.png`)_
+- `-s, --steps`: Number of optimization steps. _(Default: `1000`)_
+- `-ms, --max-size`: Maximum size of input images. _(Default: `400`)_
+- `-m, --model`: The model to use for style transfer. _(Default: `VGG19`)_
+- `-gpu, --gpu-index`: GPU index to use. _(Default: 0, if available)_
 
-  ```bash
-  python -m stylemod visualize VGG19 --dpi 200 --output model_vis.png
-  ```
+#### 2. Visualizing Model Architecture
 
-  - Replace `VGG19` with any supported model name.
-  - Use the `--output` option to save the visualization as an image file (e.g., `model_vis.png`). If not provided, the visualization will be displayed without saving.
-  - You can adjust the DPI of the visualization using the `--dpi` option.
+You can visualize the architecture of a specific model using the `visualize` command:
+
+```bash
+stylemod visualize VGG19 --output "model_visualization.png" --dpi 300
+```
+
+##### Options:
+
+- `{model name}`: The model architecture to visualize.
+- `-o, --output`: Optional path to save the visualization image (e.g., `model_vis.png`).
+- `-d, --dpi`: Set the DPI (dots per inch) for the rendered image. _(Default: `400`)_
 
 > To see an example of what the output of visualizing VGG19 would look like, see [visualize_vgg19.png](https://github.com/ooojustin/stylemod/blob/main/img/visualize_vgg19.png).
+
+#### 3. Visualizing Class Hierarchy
+
+You can visualize the class hierarchy of the `stylemod` library, which shows the relationships between different model classes.
+
+```bash
+stylemod class-hierarchy --save --show-funcs
+```
+
+##### Options:
+
+- `-s, --save`: Save the rendered class hierarchy to a file (`img/class_hierarchy.png`).
+- `-f, --show-funcs`: Show the abstract functions that should be implemented by subclasses.
+- `-d, --dpi`: Set the DPI (dots per inch) for the rendered image. _(Default: `200`)_
 
 ## ModelFactory
 
