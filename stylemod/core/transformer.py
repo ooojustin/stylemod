@@ -59,9 +59,17 @@ class TransformerBaseModel(BaseModel):
     def forward(
         self,
         target: torch.Tensor,
-        content_features: Dict[str, torch.Tensor],
-        style_features: Dict[str, torch.Tensor]
+        content_image: torch.Tensor,
+        style_image: torch.Tensor,
+        content_features: Optional[Dict[str, torch.Tensor]] = None,
+        style_features: Optional[Dict[str, torch.Tensor]] = None
     ) -> torch.Tensor:
+        if content_features is None:
+            content_features = self.get_features(
+                content_image, layers=[self.content_layer])
+        if style_features is None:
+            style_features = self.get_features(
+                style_image, layers=self.style_layers)
         content_loss = self.calc_content_loss(target, content_features)
         style_loss = self.calc_style_loss(target)
         total_loss = self.content_weight * content_loss + self.style_weight * style_loss

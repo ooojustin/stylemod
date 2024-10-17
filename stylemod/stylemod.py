@@ -85,6 +85,8 @@ def style_transfer(
     def loss_step():
         total_loss = model.forward(
             target=target,
+            content_image=content_image,  # type: ignore
+            style_image=style_image,  # type: ignore
             content_features=content_features,
             style_features=style_features,
         )

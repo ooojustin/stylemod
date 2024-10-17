@@ -13,7 +13,7 @@ Modular [neural style transfer (NST)](https://en.wikipedia.org/wiki/Neural_style
   - [BaseModel](#basemodel)
   - [CNNBaseModel](#cnnbasemodel)
   - [TransformerBaseModel](#transformerbasemodel)
-- [ModelFactory](#modelfactory)
+- [Model Factory](#modelfactory)
 - [CLI Usage](#cli-usage)
 - [License](#license)
 
@@ -101,20 +101,20 @@ The `AbstractBaseModel` is an abstract class that defines the required interface
 
 Below is a table summarizing the key abstract methods that subclasses must implement:
 
-| **Abstract Method**                                                                                                 | **Description**                                                                                                      |
-| ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `initialize_module()`                                                                                               | Initializes the model architecture and loads any required weights.                                                   |
-| `get_model_module()`                                                                                                | Returns the initialized model, ensuring that it has been properly set up.                                            |
-| `eval()`                                                                                                            | Switches the model to evaluation mode, disabling training-specific operations (like dropout or batch normalization). |
-| `set_device(device: torch.device)`                                                                                  | Moves the model to the specified device (CPU/GPU).                                                                   |
-| `normalize_tensor(tensor: torch.Tensor)`                                                                            | Normalizes the input tensor according to the model’s pre-defined normalization (if applicable).                      |
-| `denormalize_tensor(tensor: torch.Tensor)`                                                                          | Reverts normalization applied to a tensor, returning it to its original scale and distribution.                      |
-| `get_features(image: torch.Tensor, layers: List[str])`                                                              | Extracts feature maps from the given image at specified model layers.                                                |
-| `calc_gram_matrix(tensor: torch.Tensor)`                                                                            | Calculates the gram matrix of a tensor, which is used to capture style information in style transfer models.         |
-| `calc_content_loss(target: torch.Tensor, content_features: Dict[str, torch.Tensor])`                                | Computes the content loss by comparing the target image's features to the content image’s features.                  |
-| `calc_style_loss(target: torch.Tensor, style_features: Dict[str, torch.Tensor], *args, **kwargs)`                   | Computes the style loss by comparing the target image's style features with those from the style image.              |
-| `forward(target: torch.Tensor, content_features: Dict[str, torch.Tensor], style_features: Dict[str, torch.Tensor])` | Combines content and style losses into a single scalar value for optimization.                                       |
-| `visualize()`                                                                                                       | Visualizes the model’s architecture, typically outputting a Graphviz diagram.                                        |
+| **Abstract Method**                                                             | **Description**                                                                                                      |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `initialize_module()`                                                           | Initializes the model architecture and loads any required weights.                                                   |
+| `get_model_module()`                                                            | Returns the initialized model, ensuring that it has been properly set up.                                            |
+| `eval()`                                                                        | Switches the model to evaluation mode, disabling training-specific operations (like dropout or batch normalization). |
+| `set_device(device)`                                                            | Moves the model to the specified device (CPU/GPU).                                                                   |
+| `normalize_tensor(tensor)`                                                      | Normalizes the input tensor according to the model’s pre-defined normalization (if applicable).                      |
+| `denormalize_tensor(tensor)`                                                    | Reverts normalization applied to a tensor, returning it to its original scale and distribution.                      |
+| `get_features(image, layers)`                                                   | Extracts feature maps from the given image at specified model layers.                                                |
+| `calc_gram_matrix(tensor: torch.Tensor)`                                        | Calculates the gram matrix of a tensor, which is used to capture style information in style transfer models.         |
+| `calc_content_loss(target, content_features)`                                   | Computes the content loss by comparing the target image's features to the content image’s features.                  |
+| `calc_style_loss(target, style_features, *args, **kwargs)`                      | Computes the style loss by comparing the target image's style features with those from the style image.              |
+| `forward(target, content_image, style_image, content_features, style_features)` | Combines content and style losses into a single scalar value for optimization.                                       |
+| `visualize()`                                                                   | Visualizes the model’s architecture, typically outputting a Graphviz diagram.                                        |
 
 ### BaseModel
 
