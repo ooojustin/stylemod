@@ -22,7 +22,8 @@ class ViT_B_16(TransformerBaseModel):
         },
         normalization=((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         eval_mode=False,
-        retain_graph=False
+        retain_graph=False,
+        use_attention=False
     ):
         super().__init__(
             name="ViT_B_16",
@@ -32,7 +33,8 @@ class ViT_B_16(TransformerBaseModel):
             style_weights=style_weights,
             normalization=normalization,
             eval_mode=eval_mode,
-            retain_graph=retain_graph
+            retain_graph=retain_graph,
+            use_attention=use_attention
         )
 
     def get_features(self, image, layers):

@@ -1,4 +1,6 @@
 import torch
+import warnings
+from stylemod import utils
 from stylemod.core.base import BaseModel, NormalizationType
 from abc import abstractmethod
 from typing import Callable, Dict, Optional
@@ -22,7 +24,8 @@ class TransformerBaseModel(BaseModel):
         style_weights: Dict[str, float] = {},
         normalization: Optional[NormalizationType] = None,
         eval_mode: bool = False,
-        retain_graph: bool = False
+        retain_graph: bool = False,
+        use_attention: bool = False
     ):
         super().__init__(
             model_fn=model_fn,
@@ -35,45 +38,45 @@ class TransformerBaseModel(BaseModel):
             retain_graph=retain_graph
         )
         self.style_attention = None
+        self.use_attention = use_attention
+        if use_attention and not utils.is_implemented(self, "get_attention"):
+            self.use_attention = False
+            msg = """
+            Initialized transformer based model with 'use_attention = True', but the get_attention() method is not implemented.
+            The default loss calculation approach will be used.
+            """
+            warnings.warn(msg, UserWarning)
 
-    @abstractmethod
     def get_attention(self, image: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError("Method not implemented: 'get_attention'")
 
-    def calc_content_loss(self, target: torch.Tensor, content_features: Dict[str, torch.Tensor]) -> torch.Tensor:
-        target_features = self.get_features(
-            target, layers=[self.content_layer])
-        return torch.mean((target_features[self.content_layer] - content_features[self.content_layer]) ** 2)
-
-    def calc_style_loss(self, target: torch.Tensor, *args, **kwargs) -> torch.Tensor:
-        assert self.style_attention is not None, "Style attention maps must be precomputed. (call model.compute_style_attention())"
-        target_attention = self.get_attention(target)
-        loss = torch.tensor(0.0, device=target.device)
-        for layer in self.style_layers:
-            target_gm = self.calc_gram_matrix(target_attention[int(layer)])
-            style_gm = self.calc_gram_matrix(self.style_attention[int(layer)])
-            loss += self.style_weights[layer] * \
-                torch.mean((target_gm - style_gm) ** 2)
-        return loss
-
-    def forward(
+    def calc_style_loss(
         self,
         target: torch.Tensor,
-        content_image: torch.Tensor,
-        style_image: torch.Tensor,
-        content_features: Optional[Dict[str, torch.Tensor]] = None,
-        style_features: Optional[Dict[str, torch.Tensor]] = None
+        style_features: Dict[str, torch.Tensor]
     ) -> torch.Tensor:
-        if content_features is None:
-            content_features = self.get_features(
-                content_image, layers=[self.content_layer])
-        if style_features is None:
-            style_features = self.get_features(
-                style_image, layers=self.style_layers)
-        content_loss = self.calc_content_loss(target, content_features)
-        style_loss = self.calc_style_loss(target)
-        total_loss = self.content_weight * content_loss + self.style_weight * style_loss
-        return total_loss
+        """
+        Overrides the base class's style loss calculation to include
+        both feature extraction and attention mechanism.
+        """
+        loss = torch.tensor(0.0, device=target.device)
+        target_features = self.get_features(target, layers=self.style_layers)
+        for layer in self.style_layers:
+            style_gm = self.calc_gram_matrix(style_features[layer])
+            target_gm = self.calc_gram_matrix(target_features[layer])
+            loss += self.style_weights[layer] * \
+                torch.mean((style_gm - target_gm) ** 2)
+        if self.use_attention and utils.is_implemented(self, "get_attention"):
+            assert self.style_attention is not None, "Style attention not precomputed."
+            target_attention = self.get_attention(target)
+            for layer in self.style_layers:
+                target_att_gm = self.calc_gram_matrix(
+                    target_attention[int(layer)])
+                style_att_gm = self.calc_gram_matrix(
+                    self.style_attention[int(layer)])
+                loss += self.style_weights[layer] * \
+                    torch.mean((target_att_gm - style_att_gm) ** 2)
+        return loss
 
     def compute_style_attention(self, style_image: torch.Tensor) -> torch.Tensor:
         self.style_attention = self.get_attention(style_image)

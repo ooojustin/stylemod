@@ -110,6 +110,45 @@ class BaseModel(AbstractBaseModel):
                 "Default calc_gram_matrix implementation only supports either 3 dimensions (CNNs: [batch_size, seq_len, embedding_dim]) or 4 dimensions (Transformers: [batch_size, seq_len, embedding_dim] ).")
         return gm
 
+    def calc_content_loss(self, target: torch.Tensor, content_features: Dict[str, torch.Tensor]) -> torch.Tensor:
+        target_features = self.get_features(
+            target, layers=[self.content_layer])
+        return torch.mean((target_features[self.content_layer] - content_features[self.content_layer]) ** 2)
+
+    def calc_style_loss(
+        self,
+        target: torch.Tensor,
+        style_features: Dict[str, torch.Tensor],
+    ) -> torch.Tensor:
+        loss = torch.tensor(0.0, device=target.device)
+        target_features = self.get_features(target, layers=self.style_layers)
+        for layer in self.style_layers:
+            style_gm = self.calc_gram_matrix(style_features[layer])
+            target_gm = self.calc_gram_matrix(target_features[layer])
+            loss += self.style_weights[layer] * \
+                torch.mean((style_gm - target_gm) ** 2)
+        return loss
+
+    def forward(
+        self,
+        target: torch.Tensor,
+        content_image: torch.Tensor,
+        style_image: torch.Tensor,
+        content_features: Optional[Dict[str, torch.Tensor]] = None,
+        style_features: Optional[Dict[str, torch.Tensor]] = None
+    ) -> torch.Tensor:
+        if content_features is None:
+            content_features = self.get_features(
+                content_image, layers=[self.content_layer])
+        if style_features is None:
+            style_features = self.get_features(
+                style_image, layers=self.style_layers)
+        content_loss = self.calc_content_loss(target, content_features)
+        style_loss = self.calc_style_loss(
+            target, style_features)
+        loss = self.content_weight * content_loss + self.style_weight * style_loss
+        return loss
+
     def visualize(self) -> graphviz.Digraph:
         from stylemod.visualization.module import visualize
         return visualize(self)

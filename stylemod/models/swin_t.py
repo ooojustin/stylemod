@@ -1,4 +1,5 @@
 import torch
+from stylemod import utils
 from stylemod.core.transformer import TransformerBaseModel
 from torchvision.models import swin_t, Swin_T_Weights
 from torchvision.models.swin_transformer import SwinTransformerBlock, ShiftedWindowAttention
@@ -22,7 +23,8 @@ class Swin_T(TransformerBaseModel):
         },
         normalization=((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         eval_mode=False,
-        retain_graph=False
+        retain_graph=False,
+        use_attention=False
     ):
         super().__init__(
             name="Swin_T",
@@ -32,7 +34,8 @@ class Swin_T(TransformerBaseModel):
             style_weights=style_weights,
             normalization=normalization,
             eval_mode=eval_mode,
-            retain_graph=retain_graph
+            retain_graph=retain_graph,
+            use_attention=use_attention
         )
 
     def get_attention(self, image: torch.Tensor) -> torch.Tensor:

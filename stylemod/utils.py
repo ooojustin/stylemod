@@ -1,8 +1,9 @@
 import torch
 import torchvision.transforms as transforms
+import platform
+import inspect
 from PIL import Image
 from typing import Optional
-import platform
 
 
 def list_available_gpus():
@@ -59,6 +60,16 @@ def clamp_tensor_size(tensor: torch.Tensor, max_size: int) -> torch.Tensor:
         resize = transforms.Resize((new_h, new_w))
         tensor = resize(tensor)
     return tensor
+
+
+def is_implemented(obj, method_name):
+    method = getattr(obj, method_name, None)
+    if method is None:
+        return False
+    if callable(method):
+        source = inspect.getsource(method)
+        return 'raise NotImplementedError' not in source
+    return True
 
 
 def get_full_module_path(variable):

@@ -110,34 +110,33 @@ Below is a table summarizing the key abstract methods that subclasses must imple
 | `normalize_tensor(tensor)`                                                      | Normalizes the input tensor according to the model’s pre-defined normalization (if applicable).                      |
 | `denormalize_tensor(tensor)`                                                    | Reverts normalization applied to a tensor, returning it to its original scale and distribution.                      |
 | `get_features(image, layers)`                                                   | Extracts feature maps from the given image at specified model layers.                                                |
-| `calc_gram_matrix(tensor: torch.Tensor)`                                        | Calculates the gram matrix of a tensor, which is used to capture style information in style transfer models.         |
+| `calc_gram_matrix(tensor)`                                                      | Calculates the gram matrix of a tensor, which is used to capture style information in style transfer models.         |
 | `calc_content_loss(target, content_features)`                                   | Computes the content loss by comparing the target image's features to the content image’s features.                  |
-| `calc_style_loss(target, style_features, *args, **kwargs)`                      | Computes the style loss by comparing the target image's style features with those from the style image.              |
+| `calc_style_loss(target, style_features)`                                       | Computes the style loss by comparing the target image's style features with those from the style image.              |
 | `forward(target, content_image, style_image, content_features, style_features)` | Combines content and style losses into a single scalar value for optimization.                                       |
 | `visualize()`                                                                   | Visualizes the model’s architecture, typically outputting a Graphviz diagram.                                        |
 
 ### BaseModel
 
-The `BaseModel` class extends `AbstractBaseModel` by providing core functionality such as model initialization, normalization, feature extraction, and content/style loss computation. This class is designed to reduce repetitive code, allowing subclasses to focus on model-specific logic.
+The `BaseModel` class extends `AbstractBaseModel` and provides core functionality such as model initialization, normalization, feature extraction, and content/style loss computation. This class is designed to reduce repetitive code, allowing subclasses to focus on model-specific logic.
 
-- **Initialization**: The model can be initialized with a callable function (`model_fn`) to load the architecture and optional pre-trained weights.
+- **Initialization**: The model is initialized with a callable function (`model_fn`) to load the architecture and optional pre-trained weights.
 - **Normalization**: Handles input tensor normalization and denormalization, ensuring consistent image processing.
 - **Feature Extraction**: Extracts feature maps from intermediate layers of the model.
 - **Gram Matrix Calculation**: Provides a default implementation to calculate gram matrices, used for style transfer tasks.
+- **Content and Style Loss**: Implements methods for calculating content and style losses based on feature maps and gram matrices.
 
 ### CNNBaseModel
 
-The `CNNBaseModel` class extends `BaseModel` to implement style transfer logic specific to Convolutional Neural Networks (CNNs), such as VGG and ResNet. It adds methods for calculating content and style losses based on feature maps extracted from the network.
-
-- **Content Loss**: Calculated as the mean squared difference between the target and content image's feature maps at a specific layer.
-- **Style Loss**: Computed by comparing the gram matrices of the style and target images across multiple layers.
+The `CNNBaseModel` extends `BaseModel` without overriding the content and style loss calculations, meaning it leverages the same base implementation for both loss functions. The base `calc_content_loss` compares content features, and the `calc_style_loss` compares the gram matrices of style features, making this class suitable for CNN-based neural style transfer models.
 
 ### TransformerBaseModel
 
-The `TransformerBaseModel` extends `BaseModel` to support transformer architectures which rely heavily on attention mechanisms. This class introduces functionality for computing and using attention maps in style transfer.
+The `TransformerBaseModel` extends `BaseModel` to support transformer architectures that rely on attention mechanisms. This class introduces additional functionality for attention-based style transfer. When `use_attention` is set to `True`, it utilizes attention maps during style loss calculation.
 
 - **Attention Mechanism**: Requires an implementation of `get_attention()`, as the attention mechanism varies across different transformer architectures.
-- **Style Loss**: Uses attention-based style loss by comparing the gram matrices of the attention maps for the style and target images.
+- **Style Loss**: Uses both feature-based and attention-based style loss by comparing the gram matrices of feature maps and attention maps.
+- **Dynamic Control**: Attention-based style loss is only applied if the `use_attention` flag is set to `True` and if `get_attention()` is implemented in the subclass.
 
 ## CLI Usage
 

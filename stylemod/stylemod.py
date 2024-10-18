@@ -72,7 +72,7 @@ def style_transfer(
         content, layers=[model.content_layer])
     style_features = model.get_features(style, layers=model.style_layers)
 
-    if isinstance(model, TransformerBaseModel):
+    if isinstance(model, TransformerBaseModel) and model.use_attention:
         model.compute_style_attention(style)
 
     target = content.clone().requires_grad_(True).to(device)

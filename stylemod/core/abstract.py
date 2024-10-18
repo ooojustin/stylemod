@@ -66,7 +66,7 @@ class AbstractBaseModel(ABC):
         pass
 
     @abstractmethod
-    def calc_style_loss(self, target: torch.Tensor, style_features: Dict[str, torch.Tensor], *args, **kwargs) -> torch.Tensor:
+    def calc_style_loss(self, target: torch.Tensor, style_features: Dict[str, torch.Tensor]) -> torch.Tensor:
         pass
 
     @abstractmethod
