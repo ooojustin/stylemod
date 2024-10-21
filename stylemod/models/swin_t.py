@@ -1,5 +1,5 @@
 import torch
-from stylemod import utils
+from stylemod.core.base import DEFAULTS
 from stylemod.core.transformer import TransformerBaseModel
 from torchvision.models import swin_t, Swin_T_Weights
 from torchvision.models.swin_transformer import SwinTransformerBlock, ShiftedWindowAttention
@@ -21,6 +21,9 @@ class Swin_T(TransformerBaseModel):
             "3": 0.4,
             "4": 0.2
         },
+        content_weight: float = DEFAULTS["content_weight"],
+        style_weight: float = DEFAULTS["style_weight"],
+        learning_rate: float = DEFAULTS["learning_rate"],
         normalization=((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         eval_mode=False,
         retain_graph=False,
@@ -32,6 +35,9 @@ class Swin_T(TransformerBaseModel):
             weights=weights,
             content_layer=content_layer,
             style_weights=style_weights,
+            content_weight=content_weight,
+            style_weight=style_weight,
+            learning_rate=learning_rate,
             normalization=normalization,
             eval_mode=eval_mode,
             retain_graph=retain_graph,

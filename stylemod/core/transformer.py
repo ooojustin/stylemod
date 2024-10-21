@@ -1,8 +1,7 @@
 import torch
 import warnings
 from stylemod import utils
-from stylemod.core.base import BaseModel, NormalizationType
-from abc import abstractmethod
+from stylemod.core.base import BaseModel, NormalizationType, DEFAULTS
 from typing import Callable, Dict, Optional
 
 
@@ -22,6 +21,9 @@ class TransformerBaseModel(BaseModel):
         name: str = "",
         content_layer: str = "",
         style_weights: Dict[str, float] = {},
+        content_weight: float = DEFAULTS["content_weight"],
+        style_weight: float = DEFAULTS["style_weight"],
+        learning_rate: float = DEFAULTS["learning_rate"],
         normalization: Optional[NormalizationType] = None,
         eval_mode: bool = False,
         retain_graph: bool = False,
@@ -33,6 +35,9 @@ class TransformerBaseModel(BaseModel):
             name=name,
             content_layer=content_layer,
             style_weights=style_weights,
+            content_weight=content_weight,
+            style_weight=style_weight,
+            learning_rate=learning_rate,
             normalization=normalization,
             eval_mode=eval_mode,
             retain_graph=retain_graph

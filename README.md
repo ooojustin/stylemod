@@ -201,7 +201,7 @@ The `ModelFactory` automatically registers any model that extends `AbstractBaseM
 #### Key Features:
 
 - **Dynamic Model Creation**: Allows creating model instances by name or enum value, where `**kwargs` are forwarded to the constructor via the `create()` method.
-- **Automatic Model Registration**: Automatically scans and registers all models that inherit from `AbstractBaseModel`.
+- **Automatic Model Registration**: Automatically scans and registers all models in the `stylemod.models` package that inherit from `AbstractBaseModel`.
 - **Model Registry**: Maintains a registry of available models and their corresponding classes.
 - **Custom Model Registration**: Allows registering custom models by name.
 

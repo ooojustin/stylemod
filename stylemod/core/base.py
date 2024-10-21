@@ -3,13 +3,21 @@ import graphviz
 import warnings
 import torchvision.transforms as transforms
 from stylemod.core.abstract import AbstractBaseModel, NormalizationType
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Any
+
+
+# TODO(justin): tweak default hyperparameters of each model
+DEFAULTS: Dict[str, Any] = {
+    "content_weight": 1e4,
+    "style_weight": 1e2,
+    "learning_rate": 0.003
+}
 
 
 class BaseModel(AbstractBaseModel):
     """
-    Provides common functionality like initialization and normalization, 
-    reducing repetitive code. Subclasses extend it to focus on model-specific logic.
+    Provides common functionality like initialization, normalization, feature extraction, and loss calculation.
+    Subclasses extend it to focus on model-specific logic.
     """
 
     def __init__(
@@ -19,9 +27,9 @@ class BaseModel(AbstractBaseModel):
         name: str = "",
         content_layer: str = "",
         style_weights: Dict[str, float] = {},  # per layer
-        content_weight: float = 1e4,
-        style_weight: float = 1e2,
-        learning_rate: float = 0.003,
+        content_weight: float = DEFAULTS["content_weight"],
+        style_weight: float = DEFAULTS["style_weight"],
+        learning_rate: float = DEFAULTS["learning_rate"],
         normalization: Optional[NormalizationType] = None,
         eval_mode: bool = False,
         retain_graph: bool = False

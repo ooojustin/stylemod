@@ -9,7 +9,7 @@ def visualize(model: BaseModel, style=Style.MOLOKAI.value) -> graphviz.Digraph:
     assert isinstance(model.model, torch.nn.Module)
 
     dot = graphviz.Digraph(
-        comment=f"Model: {model.__class__.__name__}", format='png')
+        comment=f"Model: {model.__class__.__name__}", format="png")
     Graphviz.stylize(dot, style=style)
 
     layer_kwargs = style.custom.get("layer_kwargs", {})

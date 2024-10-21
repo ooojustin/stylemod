@@ -1,4 +1,5 @@
 import torch
+from stylemod.core.base import DEFAULTS
 from stylemod.core.cnn import CNNBaseModel
 from torchvision.models import resnet50, ResNet50_Weights
 from typing import Dict
@@ -18,6 +19,9 @@ class ResNet50(CNNBaseModel):
             "layer3": 0.4,
             "layer4": 0.2
         },
+        content_weight: float = DEFAULTS["content_weight"],
+        style_weight: float = DEFAULTS["style_weight"],
+        learning_rate: float = DEFAULTS["learning_rate"],
         normalization=((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
         eval_mode=False,
         retain_graph=False
@@ -28,6 +32,9 @@ class ResNet50(CNNBaseModel):
             weights=weights,
             content_layer=content_layer,
             style_weights=style_weights,
+            content_weight=content_weight,
+            style_weight=style_weight,
+            learning_rate=learning_rate,
             normalization=normalization,
             eval_mode=eval_mode,
             retain_graph=retain_graph
