@@ -9,6 +9,7 @@ from stylemod.models.swin_t import Swin_T
 from stylemod.models.densenet121 import DenseNet121
 from stylemod.models.regnet_y_16gf import RegNet_Y_16GF
 from stylemod.models.vgg19_eot import VGG19_EOT
+from stylemod.models.dcgan import DCGAN_VGG19
 
 
 class Model(Enum):
@@ -22,3 +23,4 @@ class Model(Enum):
     SWIN_T = Swin_T
     DENSENET121 = DenseNet121
     REGNET_Y_16GF = RegNet_Y_16GF
+    DCGAN_VGG19 = DCGAN_VGG19

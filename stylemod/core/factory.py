@@ -45,8 +45,7 @@ class ModelFactory:
         return ModelFactory._models.values()
 
     @staticmethod
-    def _register_models():
-        pkg = "stylemod.models"
+    def _register_models_from_pkg(pkg: str):
         for _, module_name, _ in pkgutil.iter_modules(importlib.import_module(pkg).__path__):
             module = importlib.import_module(f"{pkg}.{module_name}")
             for name, obj in inspect.getmembers(module, inspect.isclass):
@@ -58,6 +57,10 @@ class ModelFactory:
                             break
                     model_name = model_enum_name or name
                     ModelFactory.register(model_name, obj)
+
+    @staticmethod
+    def _register_models():
+        ModelFactory._register_models_from_pkg("stylemod.models")
 
 
 ModelFactory._register_models()

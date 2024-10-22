@@ -1,8 +1,10 @@
 import torch
 from stylemod.core.factory import ModelFactory
 from stylemod.core.base import AbstractBaseModel
+from stylemod.core.gan import GANBaseModel
 from stylemod.core.transformer import TransformerBaseModel
 from stylemod.models import Model
+from stylemod.models.dcgan import DCGAN_VGG19
 from stylemod import utils
 from tqdm import tqdm
 from typing import Union, Optional, Literal
@@ -14,7 +16,7 @@ from PIL import Image
 def style_transfer(
     content_image: Union[str, torch.Tensor],
     style_image: Union[str, torch.Tensor],
-    model: Union[Model, AbstractBaseModel] = Model.VGG19,
+    model: Union[Model, AbstractBaseModel, GANBaseModel] = Model.VGG19,
     max_size: Optional[int] = None,
     steps: int = 1000,
     gpu_index: Optional[int] = None,
@@ -48,7 +50,7 @@ def style_transfer(
             content = utils.clamp_tensor_size(content, max_size)
     else:
         raise TypeError(
-            f"Invalid type for content_image:  {type(content_image)}. Must be either a str or torch.Tensor.")
+            f"Invalid type for content_image: {type(content_image)}. Must be either a str or torch.Tensor.")
 
     if isinstance(style_image, str):
         style = utils.load_image(
@@ -62,7 +64,7 @@ def style_transfer(
             style = utils.clamp_tensor_size(style, max_size)
     else:
         raise TypeError(
-            f"Invalid type for style_image:  {type(style_image)}. Must be either a str or torch.Tensor.")
+            f"Invalid type for style_image: {type(style_image)}. Must be either a str or torch.Tensor.")
 
     if model.normalization is not None:
         content = model.normalize_tensor(content)
@@ -75,7 +77,13 @@ def style_transfer(
     if isinstance(model, TransformerBaseModel) and model.use_attention:
         model.compute_style_attention(style)
 
-    target = content.clone().requires_grad_(True).to(device)
+    if isinstance(model, DCGAN_VGG19):
+        noise = torch.randn(content.size(
+            0), model.latent_dim, 1, 1, device=device)
+        target = model.forward_generator(
+            noise).clone().detach().requires_grad_(True)
+    else:
+        target = content.clone().requires_grad_(True).to(device)
 
     if optimizer_type == "lbfgs":
         optimizer = LBFGS([target], max_iter=steps, lr=model.learning_rate)
@@ -83,18 +91,27 @@ def style_transfer(
         optimizer = Adam([target], lr=model.learning_rate)
 
     def loss_step():
-        total_loss = model.forward(
-            target=target,
-            content_image=content_image,  # type: ignore
-            style_image=style_image,  # type: ignore
-            content_features=content_features,
-            style_features=style_features,
-        )
+        if isinstance(model, DCGAN_VGG19):
+            fake_output = model.forward_discriminator(target)
+            g_loss = model.calc_generator_loss(fake_output)
+            content_loss, style_loss = model.calc_style_content_loss(
+                target, content, style)
+            total_loss = g_loss + model.vgg.content_weight * \
+                content_loss + model.vgg.style_weight * style_loss
+        else:
+            total_loss = model.forward(
+                target=target,
+                content_image=content,
+                style_image=style,
+                content_features=content_features,
+                style_features=style_features,
+            )
         total_loss.backward(retain_graph=model.retain_graph)
         return total_loss
 
     step_range = tqdm(
         range(steps), desc="Loss Optimization") if _print else range(steps)
+
     for step in step_range:
         if isinstance(optimizer, Adam):
             optimizer.zero_grad()
@@ -106,8 +123,7 @@ def style_transfer(
             raise AssertionError("Invalid optimizer.")
 
         if step % 10 == 0 and isinstance(step_range, tqdm):
-            step_range.set_postfix(  # type: ignore
-                {"total_loss": total_loss.item()})
+            step_range.set_postfix({"total_loss": total_loss.item()})
 
     tensor = target.clone().cpu().detach()
     if return_type == "pil":
