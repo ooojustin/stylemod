@@ -27,6 +27,7 @@ class CaseInsensitiveChoice(click.Choice):
 @click.option("--max-size", "-ms", default=400, help="Maximum size of input images. [Default: 400]")
 @click.option("--model", "-m", type=CaseInsensitiveChoice([model.name for model in Model]), default="VGG19", help="Model to use for feature extraction. [Default: VGG19]")
 @click.option("--gpu-index", "-gpu", default=None, type=int, help="GPU index to use. [Default: 0, if available]")
+@click.option("--plot-loss", "-pl", is_flag=True, default=False, help="Plot the losses during optimization. [Default: False]")
 def run(
     content_image: str,
     style_image: str,
@@ -34,7 +35,8 @@ def run(
     steps: int,
     max_size: int,
     model: str,
-    gpu_index: Optional[int]
+    gpu_index: Optional[int],
+    plot_loss: bool
 ) -> None:
     model_enum = Model[model]
     print("Model:", model_enum.name)
@@ -45,7 +47,8 @@ def run(
         max_size=max_size,
         model=model_enum,
         gpu_index=gpu_index,
-        return_type="pil"
+        return_type="pil",
+        plot_loss=plot_loss
     )
     assert isinstance(output, Image.Image)
     output.save(output_image)

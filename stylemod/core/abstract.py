@@ -76,7 +76,8 @@ class AbstractBaseModel(ABC):
         content_image: torch.Tensor,
         style_image: torch.Tensor,
         content_features: Optional[Dict[str, torch.Tensor]] = None,
-        style_features: Optional[Dict[str, torch.Tensor]] = None
+        style_features: Optional[Dict[str, torch.Tensor]] = None,
+        loss_callback: Optional[Callable[[float, float, float], None]] = None
     ) -> torch.Tensor:
         pass
 

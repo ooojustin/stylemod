@@ -2,6 +2,7 @@ import torch
 from stylemod.core.factory import ModelFactory
 from stylemod.core.base import AbstractBaseModel
 from stylemod.core.transformer import TransformerBaseModel
+from stylemod.visualization.loss import plot_losses
 from stylemod.models import Model
 from stylemod import utils
 from tqdm import tqdm
@@ -20,6 +21,7 @@ def style_transfer(
     gpu_index: Optional[int] = None,
     optimizer_type: Literal["adam", "lbfgs"] = "adam",
     return_type: Literal["tensor", "pil"] = "tensor",
+    plot_loss: bool = False,
     _print: bool = True
 ) -> Union[torch.Tensor, Image.Image]:
     if isinstance(model, Model):
@@ -82,6 +84,15 @@ def style_transfer(
     elif optimizer_type == "adam":
         optimizer = Adam([target], lr=model.learning_rate)
 
+    content_losses = []
+    style_losses = []
+    total_losses = []
+
+    def loss_callback(content_loss, style_loss, total_loss):
+        content_losses.append(content_loss)
+        style_losses.append(style_loss)
+        total_losses.append(total_loss)
+
     def loss_step():
         total_loss = model.forward(
             target=target,
@@ -89,6 +100,7 @@ def style_transfer(
             style_image=style_image,  # type: ignore
             content_features=content_features,
             style_features=style_features,
+            loss_callback=loss_callback
         )
         total_loss.backward(retain_graph=model.retain_graph)
         return total_loss
@@ -108,6 +120,9 @@ def style_transfer(
         if step % 10 == 0 and isinstance(step_range, tqdm):
             step_range.set_postfix(  # type: ignore
                 {"total_loss": total_loss.item()})
+
+    if plot_loss:
+        plot_losses(content_losses, style_losses, total_losses)
 
     tensor = target.clone().cpu().detach()
     if return_type == "pil":

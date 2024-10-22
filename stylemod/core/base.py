@@ -143,7 +143,8 @@ class BaseModel(AbstractBaseModel):
         content_image: torch.Tensor,
         style_image: torch.Tensor,
         content_features: Optional[Dict[str, torch.Tensor]] = None,
-        style_features: Optional[Dict[str, torch.Tensor]] = None
+        style_features: Optional[Dict[str, torch.Tensor]] = None,
+        loss_callback: Optional[Callable[[float, float, float], None]] = None
     ) -> torch.Tensor:
         if content_features is None:
             content_features = self.get_features(
@@ -155,6 +156,8 @@ class BaseModel(AbstractBaseModel):
         style_loss = self.calc_style_loss(
             target, style_features)
         loss = self.content_weight * content_loss + self.style_weight * style_loss
+        if loss_callback is not None:
+            loss_callback(content_loss.item(), style_loss.item(), loss.item())
         return loss
 
     def visualize(self) -> graphviz.Digraph:
