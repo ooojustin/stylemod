@@ -28,11 +28,20 @@ class Graphviz:
 
     @staticmethod
     def install_win():
-        url = "https://graphviz.gitlab.io/_pages/Download/Download_windows.html"
-        print(f"Please download and install Graphviz from {url}")
-        print(
-            "Once installed, make sure to add Graphviz to your PATH environment variable.")
-        input("Press Enter after installing Graphviz to continue...")
+        try:
+            subprocess.run(["scoop", "install", "graphviz"], check=True)
+            print("Graphviz installed successfully via Scoop.")
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            try:
+                subprocess.run(
+                    ["choco", "install", "graphviz", "-y"], check=True)
+                print("Graphviz installed successfully via Chocolatey.")
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                url = "https://graphviz.gitlab.io/_pages/Download/Download_windows.html"
+                print(f"Please download and install Graphviz from {url}")
+                print(
+                    "Once installed, make sure to add Graphviz to your PATH environment variable.")
+                input("Press Enter after installing Graphviz to continue...")
 
     @staticmethod
     def install_macos():
@@ -53,13 +62,13 @@ class Graphviz:
             subprocess.run(["sudo", "apt-get", "install",
                            "-y", "graphviz"], check=True)
             print("Graphviz installed successfully via apt-get.")
-        except subprocess.CalledProcessError:
+        except (subprocess.CalledProcessError, FileNotFoundError):
             try:
                 # try yum (red hat)
                 subprocess.run(["sudo", "yum", "install",
                                "-y", "graphviz"], check=True)
                 print("Graphviz installed successfully via yum.")
-            except subprocess.CalledProcessError:
+            except (subprocess.CalledProcessError, FileNotFoundError):
                 print(
                     "Please manually install Graphviz using your systems package manager.")
 
