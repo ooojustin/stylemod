@@ -1,21 +1,25 @@
+from typing import Any, Optional
+from PIL import Image
+import ast
+import inspect
 import torch
 import torchvision.transforms as transforms
 import platform
-import inspect
-from PIL import Image
-from typing import Any, Optional
 
 
 def infer_type(value: str) -> Any:
+    """Attempt to intelligently infer/convert the type of a string value."""
+    if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
+        return value[1:-1]
     if value.lower() in {"true", "false"}:
         return value.lower() == "true"
     try:
-        return int(value)
-    except ValueError:
-        try:
-            return float(value)
-        except ValueError:
-            return value
+        parsed_value = ast.literal_eval(value)
+        if isinstance(parsed_value, (dict, tuple, list, int, float)):
+            return parsed_value
+    except (ValueError, SyntaxError):
+        pass
+    return value
 
 
 def list_available_gpus():

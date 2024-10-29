@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "stylemod"
-version = "0.9.0"
+version = "0.9.1"
 description = "Modular neural style transfer library supporting CNN and Transformer-based architectures."
 authors = [{ name = "Justin Garofolo", email = "justin@garofolo.net" }]
 license = { text = "MIT" }
