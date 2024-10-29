@@ -2,11 +2,12 @@ import os
 import io
 import click
 import stylemod
+from stylemod import utils
 from stylemod.core.factory import ModelFactory
 from stylemod.visualization import architecture
 from stylemod.visualization.gv import Graphviz
 from stylemod.models import Model
-from typing import Optional
+from typing import List, Tuple, Optional
 from PIL import Image
 
 
@@ -28,6 +29,7 @@ class CaseInsensitiveChoice(click.Choice):
 @click.option("--model", "-m", type=CaseInsensitiveChoice([model.name for model in Model]), default="VGG19", help="Model to use for feature extraction. [Default: VGG19]")
 @click.option("--gpu-index", "-gpu", default=None, type=int, help="GPU index to use. [Default: 0, if available]")
 @click.option("--plot-loss", "-pl", is_flag=True, default=False, help="Plot the losses during optimization. [Default: False]")
+@click.option("--kwargs", "-kw", nargs=2, multiple=True, help="Additional keyword arguments as key-value pairs.")
 def run(
     content_image: str,
     style_image: str,
@@ -36,10 +38,15 @@ def run(
     max_size: int,
     model: str,
     gpu_index: Optional[int],
-    plot_loss: bool
+    plot_loss: bool,
+    kwargs: List[Tuple[str, str]]
 ) -> None:
     model_enum = Model[model]
     print("Model:", model_enum.name)
+    kwargs_dict = {
+        key: utils.infer_type(value) for
+        key, value in kwargs
+    }
     output = stylemod.style_transfer(
         content_image=content_image,
         style_image=style_image,
@@ -48,7 +55,8 @@ def run(
         model=model_enum,
         gpu_index=gpu_index,
         return_type="pil",
-        plot_loss=plot_loss
+        plot_loss=plot_loss,
+        **kwargs_dict
     )
     assert isinstance(output, Image.Image)
     output.save(output_image)

@@ -22,10 +22,11 @@ def style_transfer(
     optimizer_type: Literal["adam", "lbfgs"] = "adam",
     return_type: Literal["tensor", "pil"] = "tensor",
     plot_loss: bool = False,
-    _print: bool = True
+    _print: bool = True,
+    **kwargs
 ) -> Union[torch.Tensor, Image.Image]:
     if isinstance(model, Model):
-        model = ModelFactory.create(model.name)
+        model = ModelFactory.create(model.name, **kwargs)
     elif isinstance(model, AbstractBaseModel):
         model = model
     else:

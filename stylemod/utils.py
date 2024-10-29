@@ -3,7 +3,19 @@ import torchvision.transforms as transforms
 import platform
 import inspect
 from PIL import Image
-from typing import Optional
+from typing import Any, Optional
+
+
+def infer_type(value: str) -> Any:
+    if value.lower() in {"true", "false"}:
+        return value.lower() == "true"
+    try:
+        return int(value)
+    except ValueError:
+        try:
+            return float(value)
+        except ValueError:
+            return value
 
 
 def list_available_gpus():
